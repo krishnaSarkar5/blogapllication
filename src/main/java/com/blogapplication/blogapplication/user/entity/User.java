@@ -2,13 +2,16 @@ package com.blogapplication.blogapplication.user.entity;
 
 
 import com.blogapplication.blogapplication.user.dto.CreateUserRequestDto;
-import lombok.Data;
+import lombok.*;
 
 import javax.persistence.*;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 
-@Data
+@Getter
+@Setter
+@AllArgsConstructor
+@NoArgsConstructor
 @Entity
 public class User {
 
