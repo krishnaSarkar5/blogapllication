@@ -19,6 +19,7 @@ import org.springframework.security.config.annotation.web.configuration.WebSecur
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.password.NoOpPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
@@ -64,9 +65,9 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter{
                 .authorizeRequests()
 
 
-                .antMatchers("/swagger*/**", "/user/login","/demo","/otp/**",
-                        "/v2/api-docs", "/configuration/**",
-                        "/webjars/**","/**").permitAll()
+                .antMatchers("/swagger*/**",
+                        "/v2/api-docs", "/configuration/**","/demo/**",
+                        "/webjars/**","/authentication/login","/user/create-user").permitAll()
 
 
 
@@ -77,7 +78,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter{
                 .and().exceptionHandling().authenticationEntryPoint(jwtAuthenticationEntryPoint)
                 .and().sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS);
         // Add a filter to validate the tokens with every request
-//		http.addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
+		http.addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
 
     }
 

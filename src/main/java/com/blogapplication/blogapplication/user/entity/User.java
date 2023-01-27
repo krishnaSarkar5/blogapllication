@@ -37,7 +37,7 @@ public class User {
         this.email = createUserRequestDto.getEmail();
         this.phone = createUserRequestDto.getPhone();
         this.firstName = createUserRequestDto.getFirstName();
-        this.lastName = createUserRequestDto.getFirstName();
+        this.lastName = createUserRequestDto.getLastName();
         this.password = createUserRequestDto.getPassword();
         this.createdAt = LocalDateTime.now(ZoneId.of("UTC"));
         this.updatedAt = LocalDateTime.now(ZoneId.of("UTC"));

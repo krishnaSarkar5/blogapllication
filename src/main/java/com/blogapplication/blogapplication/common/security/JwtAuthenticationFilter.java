@@ -56,6 +56,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter{
 		String jwtToken = null;
 		// JWT Token is in the form "Bearer token". Remove Bearer word and get
 		// only the Token
+		logger.info(" incoming token = "+jwtToken);
 		if (requestTokenHeader != null && requestTokenHeader.startsWith("Bearer ")) {
 			jwtToken = requestTokenHeader.substring(7);
 			try {
@@ -81,7 +82,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter{
 			//validates if the username is phone number or email address
 			user = userRepository.findByProfileId(profileId).orElseThrow(()->new ServiceException("User Not Founr"));
 			
-			UserLoginToken userLoginToken = userLoginTokenRepository.findByUser_idAndTokenAndStatus(user.getId(), requestTokenHeader, 1);
+			UserLoginToken userLoginToken = userLoginTokenRepository.findByUser_idAndTokenAndStatus(user.getId(), requestTokenHeader, Integer.parseInt(environment.getProperty("active")));
 			boolean isTokenActive = !Objects.isNull(userLoginToken);
 			
 
