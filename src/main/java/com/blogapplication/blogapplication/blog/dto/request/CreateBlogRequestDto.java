@@ -56,7 +56,7 @@ public class CreateBlogRequestDto {
         }
 
         newBlog.setCreatedAt(LocalDateTime.now(ZoneId.of("UTC")));
-        newBlog.setUpdatedAt(LocalDateTime.now(ZoneId.of("UTC")));
+        newBlog.setUpdatedAt(newBlog.getCreatedAt());
         return newBlog;
     }
 }

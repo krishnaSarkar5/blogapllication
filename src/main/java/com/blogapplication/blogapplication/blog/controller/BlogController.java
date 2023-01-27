@@ -2,6 +2,8 @@ package com.blogapplication.blogapplication.blog.controller;
 
 import com.blogapplication.blogapplication.authentication.dto.ResponseDto;
 import com.blogapplication.blogapplication.blog.dto.request.CreateBlogRequestDto;
+import com.blogapplication.blogapplication.blog.dto.request.GetBlogRequestDto;
+import com.blogapplication.blogapplication.blog.dto.request.ReactBlogRequestDto;
 import com.blogapplication.blogapplication.blog.service.BlogService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -19,5 +21,17 @@ public class BlogController {
     public ResponseEntity<ResponseDto> createBlog(@RequestHeader("Authorization") String Authorization, @RequestBody CreateBlogRequestDto createBlogRequestDto){
         ResponseDto responseDto = blogService.createBlog(createBlogRequestDto);
         return new ResponseEntity<ResponseDto>(responseDto, HttpStatus.CREATED);
+    }
+
+    @PostMapping("/get-blog")
+    public ResponseEntity<ResponseDto> getBlog(@RequestHeader("Authorization") String Authorization, @RequestBody GetBlogRequestDto getBlogRequestDto){
+        ResponseDto responseDto = blogService.getABlog(getBlogRequestDto);
+        return new ResponseEntity<ResponseDto>(responseDto, HttpStatus.OK);
+    }
+
+    @PostMapping("/react-blog")
+    public ResponseEntity<ResponseDto> reactBlog(@RequestHeader("Authorization") String Authorization, @RequestBody ReactBlogRequestDto reactBlogRequestDto){
+        ResponseDto responseDto = blogService.reactBlog(reactBlogRequestDto);
+        return new ResponseEntity<ResponseDto>(responseDto, HttpStatus.OK);
     }
 }

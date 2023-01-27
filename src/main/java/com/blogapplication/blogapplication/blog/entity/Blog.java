@@ -5,6 +5,7 @@ import lombok.Data;
 
 import javax.persistence.*;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.List;
 
 @Entity
@@ -35,4 +36,16 @@ public class Blog {
 
     @ManyToOne
     private User createdBy;
+
+
+    public BlogReactionDetails likeBlog(User likedBy){
+
+        BlogReactionDetails blogReactionDetails = new BlogReactionDetails();
+
+        blogReactionDetails.setBlog(this);
+        blogReactionDetails.setReactedBy(likedBy);
+        blogReactionDetails.setReactedAt(LocalDateTime.now(ZoneId.of("UTC")));
+
+        return blogReactionDetails;
+    }
 }
