@@ -1,10 +1,7 @@
-package com.blogapplication.blogapplication.blog.dto.request;
+package com.blogapplication.blogapplication.blog.dto.response;
 
-import com.blogapplication.blogapplication.user.entity.User;
 import lombok.Data;
 
-import javax.persistence.*;
-import java.time.LocalDateTime;
 import java.util.List;
 
 @Data
@@ -27,11 +24,15 @@ public class GetBlogResponseDto {
 
     private Long createdBy;
 
-    private Integer reaction;
+    private Integer ownReaction;
 
     private boolean edited;
 
     private Integer views;
+
+    private Integer reactionCount;
+
+    private List<ReactionDto> reactionList;
 
     // comment field yet to be added
 

@@ -3,8 +3,9 @@ package com.blogapplication.blogapplication.blog.serviceImpl;
 import com.blogapplication.blogapplication.authentication.dto.ResponseDto;
 import com.blogapplication.blogapplication.blog.dto.request.CreateBlogRequestDto;
 import com.blogapplication.blogapplication.blog.dto.request.GetBlogRequestDto;
-import com.blogapplication.blogapplication.blog.dto.request.GetBlogResponseDto;
+import com.blogapplication.blogapplication.blog.dto.response.GetBlogResponseDto;
 import com.blogapplication.blogapplication.blog.dto.request.ReactBlogRequestDto;
+import com.blogapplication.blogapplication.blog.dto.response.ReactionDto;
 import com.blogapplication.blogapplication.blog.entity.Blog;
 import com.blogapplication.blogapplication.blog.entity.BlogReactionDetails;
 import com.blogapplication.blogapplication.blog.entity.BlogViewDetails;
@@ -24,8 +25,10 @@ import javax.transaction.Transactional;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
+import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 public class BlogServiceImpl implements BlogService {
@@ -124,40 +127,51 @@ public class BlogServiceImpl implements BlogService {
         blogResponseDto.setCreatedAt(blog.getCreatedAt().format(DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm:ss")));
         blogResponseDto.setEdited(!blog.getUpdatedAt().isEqual(blog.getCreatedAt()));
         blogResponseDto.setViews(this.viewBlog(blog,loggedInUser));
+        List<ReactionDto> allReactions = this.getAllReactions(blog);
+        blogResponseDto.setReactionList(allReactions);
+        blogResponseDto.setReactionCount(allReactions.size());
 
         if(reaction.isPresent() && reaction.get().getIsReacted()){
             switch (reaction.get().getReaction()){
 
                 case LIKE:{
-                        blogResponseDto.setReaction(Integer.parseInt(environment.getProperty("like")));
+                        blogResponseDto.setOwnReaction(Integer.parseInt(environment.getProperty("like")));
                         break;
                 }
 
                 case LOVE:{
-                    blogResponseDto.setReaction(Integer.parseInt(environment.getProperty("love")));
+                    blogResponseDto.setOwnReaction(Integer.parseInt(environment.getProperty("love")));
                     break;
                 }
 
                 case SUPPORT:{
-                    blogResponseDto.setReaction(Integer.parseInt(environment.getProperty("support")));
+                    blogResponseDto.setOwnReaction(Integer.parseInt(environment.getProperty("support")));
                     break;
                 }
 
                 case FUNNY:{
-                    blogResponseDto.setReaction(Integer.parseInt(environment.getProperty("funny")));
+                    blogResponseDto.setOwnReaction(Integer.parseInt(environment.getProperty("funny")));
                     break;
                 }
 
                 default:{
-                    blogResponseDto.setReaction(-1);
+                    blogResponseDto.setOwnReaction(-1);
 
                 }
             }
         }else {
-            blogResponseDto.setReaction(-1);
+            blogResponseDto.setOwnReaction(-1);
         }
 
         return blogResponseDto;
+    }
+
+    private List<ReactionDto> getAllReactions(Blog blog){
+        List<BlogReactionDetails> reactionList = blogReactedDetailsRepository.findByBlogIdAndIsReacted(blog.getId(), true);
+
+        List<ReactionDto> reactionDtoList = reactionList.stream().map((e) -> new ReactionDto(e, environment)).collect(Collectors.toList());
+
+        return reactionDtoList;
     }
 
     private User getLoggedInUser() {
