@@ -31,6 +31,8 @@ public class GetBlogResponseDto {
 
     private boolean edited;
 
+    private Integer views;
+
     // comment field yet to be added
 
 }

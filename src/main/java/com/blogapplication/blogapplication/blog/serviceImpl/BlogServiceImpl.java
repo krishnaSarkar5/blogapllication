@@ -7,9 +7,11 @@ import com.blogapplication.blogapplication.blog.dto.request.GetBlogResponseDto;
 import com.blogapplication.blogapplication.blog.dto.request.ReactBlogRequestDto;
 import com.blogapplication.blogapplication.blog.entity.Blog;
 import com.blogapplication.blogapplication.blog.entity.BlogReactionDetails;
+import com.blogapplication.blogapplication.blog.entity.BlogViewDetails;
 import com.blogapplication.blogapplication.blog.enums.Reaction;
 import com.blogapplication.blogapplication.blog.repositoty.BlogReactionDetailsRepository;
 import com.blogapplication.blogapplication.blog.repositoty.BlogRepository;
+import com.blogapplication.blogapplication.blog.repositoty.BlogViewDetailsRepository;
 import com.blogapplication.blogapplication.blog.service.BlogService;
 import com.blogapplication.blogapplication.common.exceptiom.ServiceException;
 import com.blogapplication.blogapplication.common.utility.AuthenticationUtil;
@@ -18,6 +20,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Service;
 
+import javax.transaction.Transactional;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
@@ -40,6 +43,8 @@ public class BlogServiceImpl implements BlogService {
 
     @Autowired
     private BlogReactionDetailsRepository blogReactedDetailsRepository;
+    @Autowired
+    private BlogViewDetailsRepository blogViewDetailsRepository;
 
     @Override
     public ResponseDto createBlog(CreateBlogRequestDto request) {
@@ -64,6 +69,7 @@ public class BlogServiceImpl implements BlogService {
     }
 
     @Override
+    @Transactional
     public ResponseDto getABlog(GetBlogRequestDto request) {
 
         this.validateIncomingRequest(request);
@@ -79,7 +85,7 @@ public class BlogServiceImpl implements BlogService {
 
         Optional<BlogReactionDetails> reaction = blogReactedDetailsRepository.findByBlogIdAndReactedByIdAndIsReacted(existedBlog.getId(), loggedInUser.getId(), true);
 
-        GetBlogResponseDto blogResponseDto = this.getBlogResponseDto(existedBlog, reaction);
+        GetBlogResponseDto blogResponseDto = this.getBlogResponseDto(existedBlog,loggedInUser ,reaction);
 
         ResponseDto responseDto = new ResponseDto();
         responseDto.setStatus(true);
@@ -89,7 +95,22 @@ public class BlogServiceImpl implements BlogService {
         return responseDto;
     }
 
-    private GetBlogResponseDto getBlogResponseDto(Blog blog, Optional<BlogReactionDetails> reaction){
+    private Integer viewBlog(Blog blog,User user){
+
+        Optional<BlogViewDetails> previousView = blogViewDetailsRepository.findByBlogIdAndViewedById(blog.getId(), user.getId());
+
+        if(previousView.isEmpty()){
+            BlogViewDetails newView = new BlogViewDetails();
+            newView.setBlog(blog);
+            newView.setViewedBy(user);
+            newView.setViewedAt(LocalDateTime.now(ZoneId.of("UTC")));
+            blogViewDetailsRepository.save(newView);
+        }
+
+        return blogViewDetailsRepository.countByBlogId(blog.getId());
+    }
+
+    private GetBlogResponseDto getBlogResponseDto(Blog blog,User loggedInUser, Optional<BlogReactionDetails> reaction){
 
         GetBlogResponseDto blogResponseDto = new GetBlogResponseDto();
 
@@ -102,6 +123,7 @@ public class BlogServiceImpl implements BlogService {
         blogResponseDto.setCreatedBy(blog.getCreatedBy().getId());
         blogResponseDto.setCreatedAt(blog.getCreatedAt().format(DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm:ss")));
         blogResponseDto.setEdited(!blog.getUpdatedAt().isEqual(blog.getCreatedAt()));
+        blogResponseDto.setViews(this.viewBlog(blog,loggedInUser));
 
         if(reaction.isPresent() && reaction.get().getIsReacted()){
             switch (reaction.get().getReaction()){
