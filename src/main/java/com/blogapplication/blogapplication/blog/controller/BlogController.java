@@ -3,6 +3,7 @@ package com.blogapplication.blogapplication.blog.controller;
 import com.blogapplication.blogapplication.authentication.dto.ResponseDto;
 import com.blogapplication.blogapplication.blog.dto.request.CreateBlogRequestDto;
 import com.blogapplication.blogapplication.blog.dto.request.GetBlogRequestDto;
+import com.blogapplication.blogapplication.blog.dto.request.PostCommentRequestDto;
 import com.blogapplication.blogapplication.blog.dto.request.ReactBlogRequestDto;
 import com.blogapplication.blogapplication.blog.service.BlogService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -32,6 +33,12 @@ public class BlogController {
     @PostMapping("/react-blog")
     public ResponseEntity<ResponseDto> reactBlog(@RequestHeader("Authorization") String Authorization, @RequestBody ReactBlogRequestDto reactBlogRequestDto){
         ResponseDto responseDto = blogService.reactBlog(reactBlogRequestDto);
+        return new ResponseEntity<ResponseDto>(responseDto, HttpStatus.OK);
+    }
+
+    @PostMapping("/post-comment")
+    public ResponseEntity<ResponseDto> postComment(@RequestHeader("Authorization") String Authorization, @RequestBody PostCommentRequestDto postCommentRequestDto){
+        ResponseDto responseDto = blogService.postComment(postCommentRequestDto);
         return new ResponseEntity<ResponseDto>(responseDto, HttpStatus.OK);
     }
 }

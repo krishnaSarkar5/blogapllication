@@ -3,16 +3,19 @@ package com.blogapplication.blogapplication.blog.serviceImpl;
 import com.blogapplication.blogapplication.authentication.dto.ResponseDto;
 import com.blogapplication.blogapplication.blog.dto.request.CreateBlogRequestDto;
 import com.blogapplication.blogapplication.blog.dto.request.GetBlogRequestDto;
+import com.blogapplication.blogapplication.blog.dto.request.PostCommentRequestDto;
 import com.blogapplication.blogapplication.blog.dto.response.GetBlogResponseDto;
 import com.blogapplication.blogapplication.blog.dto.request.ReactBlogRequestDto;
 import com.blogapplication.blogapplication.blog.dto.response.ReactionDto;
 import com.blogapplication.blogapplication.blog.entity.Blog;
 import com.blogapplication.blogapplication.blog.entity.BlogReactionDetails;
 import com.blogapplication.blogapplication.blog.entity.BlogViewDetails;
+import com.blogapplication.blogapplication.blog.entity.Comment;
 import com.blogapplication.blogapplication.blog.enums.Reaction;
 import com.blogapplication.blogapplication.blog.repositoty.BlogReactionDetailsRepository;
 import com.blogapplication.blogapplication.blog.repositoty.BlogRepository;
 import com.blogapplication.blogapplication.blog.repositoty.BlogViewDetailsRepository;
+import com.blogapplication.blogapplication.blog.repositoty.CommentRepository;
 import com.blogapplication.blogapplication.blog.service.BlogService;
 import com.blogapplication.blogapplication.common.exceptiom.ServiceException;
 import com.blogapplication.blogapplication.common.utility.AuthenticationUtil;
@@ -48,6 +51,8 @@ public class BlogServiceImpl implements BlogService {
     private BlogReactionDetailsRepository blogReactedDetailsRepository;
     @Autowired
     private BlogViewDetailsRepository blogViewDetailsRepository;
+    @Autowired
+    private CommentRepository commentRepository;
 
     @Override
     public ResponseDto createBlog(CreateBlogRequestDto request) {
@@ -79,7 +84,7 @@ public class BlogServiceImpl implements BlogService {
 
         User loggedInUser = getLoggedInUser();
 
-        Blog existedBlog = blogRepository.findById(request.getId()).orElseThrow(() -> new ServiceException("BLOG_NOT_FOUND"));
+        Blog existedBlog = blogRepository.findByIdAndStatus(request.getId(),Integer.parseInt(environment.getProperty("active"))).orElseThrow(() -> new ServiceException("BLOG_NOT_FOUND"));
 
         if(existedBlog.getStatus()==Integer.parseInt(environment.getProperty("inactive"))
         || existedBlog.getStatus()==Integer.parseInt(environment.getProperty("delete"))){
@@ -98,7 +103,7 @@ public class BlogServiceImpl implements BlogService {
         return responseDto;
     }
 
-    private Integer viewBlog(Blog blog,User user){
+    private Integer viewDetailsOfBlog(Blog blog, User user){
 
         Optional<BlogViewDetails> previousView = blogViewDetailsRepository.findByBlogIdAndViewedById(blog.getId(), user.getId());
 
@@ -126,7 +131,7 @@ public class BlogServiceImpl implements BlogService {
         blogResponseDto.setCreatedBy(blog.getCreatedBy().getId());
         blogResponseDto.setCreatedAt(blog.getCreatedAt().format(DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm:ss")));
         blogResponseDto.setEdited(!blog.getUpdatedAt().isEqual(blog.getCreatedAt()));
-        blogResponseDto.setViews(this.viewBlog(blog,loggedInUser));
+        blogResponseDto.setViews(this.viewDetailsOfBlog(blog,loggedInUser));
         List<ReactionDto> allReactions = this.getAllReactions(blog);
         blogResponseDto.setReactionList(allReactions);
         blogResponseDto.setReactionCount(allReactions.size());
@@ -190,7 +195,7 @@ public class BlogServiceImpl implements BlogService {
 
         User loggedInUser = getLoggedInUser();
 
-        Blog existedBlog = blogRepository.findById(request.getId()).orElseThrow(() -> new ServiceException("BLOG_NOT_FOUND"));
+        Blog existedBlog = blogRepository.findByIdAndStatus(request.getId(),Integer.parseInt(environment.getProperty("active"))).orElseThrow(() -> new ServiceException("BLOG_NOT_FOUND"));
 
         Optional<BlogReactionDetails> reactionOptional = blogReactedDetailsRepository.findByBlogIdAndReactedById(request.getId(), loggedInUser.getId());
 
@@ -254,6 +259,39 @@ public class BlogServiceImpl implements BlogService {
         return responseDto;
     }
 
+    @Override
+    public ResponseDto postComment(PostCommentRequestDto request) {
+
+        Blog existedBlog = blogRepository.findByIdAndStatus(request.getBlogId(), Integer.parseInt(environment.getProperty("active"))).orElseThrow(() -> new ServiceException("BLOG_NOT_FOUND"));
+
+        User loggedInUser = this.getLoggedInUser();
+
+        Comment newComment = this.getCommentEntity(request, existedBlog, loggedInUser);
+
+        commentRepository.save(newComment);
+
+        ResponseDto responseDto = new ResponseDto();
+        responseDto.setData(environment.getProperty("commentAdded"));
+        responseDto.setMessage(environment.getProperty("successResponse"));
+        responseDto.setStatus(true);
+        return responseDto;
+    }
+
+
+    private Comment getCommentEntity(PostCommentRequestDto request,Blog blog,User loggedInUser){
+
+        Comment comment = new Comment();
+
+        comment.setComment(request.getComment());
+        comment.setBlog(blog);
+        comment.setCommentedBy(loggedInUser);
+        comment.setCommentedAt(LocalDateTime.now(ZoneId.of("UTC")));
+        comment.setUpdatedAt(comment.getCommentedAt());
+        comment.setStatus(Integer.parseInt(environment.getProperty("active")));
+        comment.setType(Integer.parseInt(environment.getProperty("comment")));
+        return comment;
+    }
+
     private void validateIncomingRequest(Object object){
         if(object instanceof CreateBlogRequestDto){
             CreateBlogRequestDto request =   (CreateBlogRequestDto) object;
@@ -267,6 +305,11 @@ public class BlogServiceImpl implements BlogService {
 
         else if (object instanceof ReactBlogRequestDto) {
             ReactBlogRequestDto request =   (ReactBlogRequestDto) object;
+            request.validateData();
+        }
+
+        else if (object instanceof PostCommentRequestDto) {
+            PostCommentRequestDto request = (PostCommentRequestDto) object;
             request.validateData();
         }
         else {
