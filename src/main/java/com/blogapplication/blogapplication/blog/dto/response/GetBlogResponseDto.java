@@ -34,6 +34,8 @@ public class GetBlogResponseDto {
 
     private List<ReactionDto> reactionList;
 
+    private List<CommentResponseDto> comments;
+
     // comment field yet to be added
 
 }

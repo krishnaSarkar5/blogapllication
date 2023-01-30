@@ -1,11 +1,9 @@
 package com.blogapplication.blogapplication.blog.serviceImpl;
 
 import com.blogapplication.blogapplication.authentication.dto.ResponseDto;
-import com.blogapplication.blogapplication.blog.dto.request.CreateBlogRequestDto;
-import com.blogapplication.blogapplication.blog.dto.request.GetBlogRequestDto;
-import com.blogapplication.blogapplication.blog.dto.request.PostCommentRequestDto;
+import com.blogapplication.blogapplication.blog.dto.request.*;
+import com.blogapplication.blogapplication.blog.dto.response.CommentResponseDto;
 import com.blogapplication.blogapplication.blog.dto.response.GetBlogResponseDto;
-import com.blogapplication.blogapplication.blog.dto.request.ReactBlogRequestDto;
 import com.blogapplication.blogapplication.blog.dto.response.ReactionDto;
 import com.blogapplication.blogapplication.blog.entity.Blog;
 import com.blogapplication.blogapplication.blog.entity.BlogReactionDetails;
@@ -28,6 +26,7 @@ import javax.transaction.Transactional;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -95,12 +94,59 @@ public class BlogServiceImpl implements BlogService {
 
         GetBlogResponseDto blogResponseDto = this.getBlogResponseDto(existedBlog,loggedInUser ,reaction);
 
+
         ResponseDto responseDto = new ResponseDto();
         responseDto.setStatus(true);
         responseDto.setMessage(environment.getProperty("successResponse"));
         responseDto.setData(blogResponseDto);
 
         return responseDto;
+    }
+
+
+
+    private List<CommentResponseDto> getBlogCommentsByBlogId(Long blogId){
+
+        List<Comment> allComments = commentRepository.findByBlogIdAndStatusAndType(blogId, Integer.parseInt(environment.getProperty("active")), Integer.parseInt(environment.getProperty("comment")));
+
+      List<CommentResponseDto> allCommentsResponseDto =   allComments.stream().map(c-> this.getResponseDtoForCommentWithReply(c)).collect(Collectors.toList());
+
+
+
+
+        return allCommentsResponseDto;
+    }
+
+
+    private CommentResponseDto getResponseDtoForCommentWithReply(Comment comment){
+        List<CommentResponseDto> commentsReplyDto = this.getCommentsReplyDto(comment.getReply());
+        CommentResponseDto commentResponseDto = this.convertCommentEntityToCommentResponseDto(comment);
+        commentResponseDto.setReplies(commentsReplyDto);
+        return commentResponseDto;
+    }
+
+    private List<CommentResponseDto> getCommentsReplyDto(List<Comment> replies){
+
+        List<CommentResponseDto> allRepliesDto = new ArrayList<>();
+
+        List<CommentResponseDto> allReplies = replies.stream().map(r -> this.convertCommentEntityToCommentResponseDto(r)).collect(Collectors.toList());
+
+        return allReplies;
+    }
+
+
+    private CommentResponseDto convertCommentEntityToCommentResponseDto(Comment comment){
+
+        CommentResponseDto commentResponseDto = new CommentResponseDto();
+
+        commentResponseDto.setId(comment.getId());
+        commentResponseDto.setBlogId(comment.getId());
+        commentResponseDto.setComment(comment.getComment());
+        commentResponseDto.setCommentedAt(comment.getCommentedAt().format(DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm:ss")));
+        commentResponseDto.setCommentedBy(comment.getCommentedBy().getId());
+        commentResponseDto.setStatus(comment.getStatus());
+        commentResponseDto.setEdited(comment.getCommentedAt().equals(comment.getUpdatedAt()));
+        return  commentResponseDto;
     }
 
     private Integer viewDetailsOfBlog(Blog blog, User user){
@@ -135,6 +181,8 @@ public class BlogServiceImpl implements BlogService {
         List<ReactionDto> allReactions = this.getAllReactions(blog);
         blogResponseDto.setReactionList(allReactions);
         blogResponseDto.setReactionCount(allReactions.size());
+        blogResponseDto.setComments(this.getBlogCommentsByBlogId(blog.getId()));
+
 
         if(reaction.isPresent() && reaction.get().getIsReacted()){
             switch (reaction.get().getReaction()){
@@ -277,6 +325,44 @@ public class BlogServiceImpl implements BlogService {
         return responseDto;
     }
 
+    @Override
+    public ResponseDto replyComment(ReplyCommentRequestDto request) {
+
+        this.validateIncomingRequest(request);
+
+        User loggedInUser = this.getLoggedInUser();
+
+        Comment existedComment = commentRepository.findByIdAndStatusAndType(request.getCommentId(), Integer.parseInt(environment.getProperty("active")), Integer.parseInt(environment.getProperty("comment"))).orElseThrow(()-> new ServiceException("Invalid comment id"));
+
+        Comment replyEntity = this.getReplyEntity(request, existedComment.getBlog(), loggedInUser);
+
+        List<Comment> existedReplies = null;
+
+
+        // in future test casecade type all
+        Comment savedReply = commentRepository.save(replyEntity);
+
+        if(existedComment.getReply().isEmpty()){
+            existedReplies =  new ArrayList<>();
+        }else {
+            existedReplies = existedComment.getReply();
+        }
+
+        existedReplies.add(savedReply);
+
+        existedComment.setReply(existedReplies);
+
+        commentRepository.save(existedComment);
+
+        ResponseDto responseDto = new ResponseDto();
+        responseDto.setData(environment.getProperty("replyAdded"));
+        responseDto.setMessage(environment.getProperty("successResponse"));
+        responseDto.setStatus(true);
+
+
+        return responseDto;
+    }
+
 
     private Comment getCommentEntity(PostCommentRequestDto request,Blog blog,User loggedInUser){
 
@@ -289,6 +375,20 @@ public class BlogServiceImpl implements BlogService {
         comment.setUpdatedAt(comment.getCommentedAt());
         comment.setStatus(Integer.parseInt(environment.getProperty("active")));
         comment.setType(Integer.parseInt(environment.getProperty("comment")));
+        return comment;
+    }
+
+    private Comment getReplyEntity(ReplyCommentRequestDto request,Blog blog,User loggedInUser){
+
+        Comment comment = new Comment();
+
+        comment.setComment(request.getReply());
+        comment.setBlog(blog);
+        comment.setCommentedBy(loggedInUser);
+        comment.setCommentedAt(LocalDateTime.now(ZoneId.of("UTC")));
+        comment.setUpdatedAt(comment.getCommentedAt());
+        comment.setStatus(Integer.parseInt(environment.getProperty("active")));
+        comment.setType(Integer.parseInt(environment.getProperty("reply")));
         return comment;
     }
 
@@ -310,6 +410,11 @@ public class BlogServiceImpl implements BlogService {
 
         else if (object instanceof PostCommentRequestDto) {
             PostCommentRequestDto request = (PostCommentRequestDto) object;
+            request.validateData();
+        }
+
+        else if (object instanceof ReplyCommentRequestDto) {
+            ReplyCommentRequestDto request = (ReplyCommentRequestDto) object;
             request.validateData();
         }
         else {
