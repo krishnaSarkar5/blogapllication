@@ -3,6 +3,7 @@ package com.blogapplication.blogapplication.blog.controller;
 import com.blogapplication.blogapplication.authentication.dto.ResponseDto;
 import com.blogapplication.blogapplication.blog.dto.request.*;
 import com.blogapplication.blogapplication.blog.service.BlogService;
+import com.blogapplication.blogapplication.common.dto.requestDto.IdDto;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -42,6 +43,13 @@ public class BlogController {
     @PostMapping("/reply-comment")
     public ResponseEntity<ResponseDto> replyComment(@RequestHeader("Authorization") String Authorization, @RequestBody ReplyCommentRequestDto replyCommentRequestDto){
         ResponseDto responseDto = blogService.replyComment(replyCommentRequestDto);
+        return new ResponseEntity<ResponseDto>(responseDto, HttpStatus.OK);
+    }
+
+
+    @PostMapping("/blog-views")
+    public ResponseEntity<ResponseDto> getViews(@RequestHeader("Authorization") String Authorization, @RequestBody IdDto idDto){
+        ResponseDto responseDto = blogService.getViews(idDto);
         return new ResponseEntity<ResponseDto>(responseDto, HttpStatus.OK);
     }
 }

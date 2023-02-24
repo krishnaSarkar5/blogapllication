@@ -8,4 +8,9 @@ import java.util.Optional;
 public interface BlogRepository extends JpaRepository<Blog,Long> {
 
     public Optional<Blog> findByIdAndStatus(Long blogId,Integer status);
+
+
+//    public Integer countByDistinctUserIdAndId(Long blogId);
+
+//    countDistinctByUserIdAndId
 }

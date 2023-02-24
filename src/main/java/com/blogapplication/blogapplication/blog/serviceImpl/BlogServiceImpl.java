@@ -9,27 +9,27 @@ import com.blogapplication.blogapplication.blog.entity.Blog;
 import com.blogapplication.blogapplication.blog.entity.BlogReactionDetails;
 import com.blogapplication.blogapplication.blog.entity.BlogViewDetails;
 import com.blogapplication.blogapplication.blog.entity.Comment;
+import com.blogapplication.blogapplication.blog.enums.BlogSortField;
 import com.blogapplication.blogapplication.blog.enums.Reaction;
 import com.blogapplication.blogapplication.blog.repositoty.BlogReactionDetailsRepository;
 import com.blogapplication.blogapplication.blog.repositoty.BlogRepository;
 import com.blogapplication.blogapplication.blog.repositoty.BlogViewDetailsRepository;
 import com.blogapplication.blogapplication.blog.repositoty.CommentRepository;
 import com.blogapplication.blogapplication.blog.service.BlogService;
+import com.blogapplication.blogapplication.common.dto.requestDto.IdDto;
 import com.blogapplication.blogapplication.common.exceptiom.ServiceException;
 import com.blogapplication.blogapplication.common.utility.AuthenticationUtil;
 import com.blogapplication.blogapplication.user.entity.User;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.env.Environment;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import javax.transaction.Transactional;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -83,7 +83,7 @@ public class BlogServiceImpl implements BlogService {
 
         User loggedInUser = getLoggedInUser();
 
-        Blog existedBlog = blogRepository.findByIdAndStatus(request.getId(),Integer.parseInt(environment.getProperty("active"))).orElseThrow(() -> new ServiceException("BLOG_NOT_FOUND"));
+        Blog existedBlog = blogRepository.findByIdAndStatus(request.getId(),Integer.parseInt(Objects.requireNonNull(environment.getProperty("active")))).orElseThrow(() -> new ServiceException("BLOG_NOT_FOUND"));
 
         if(existedBlog.getStatus()==Integer.parseInt(environment.getProperty("inactive"))
         || existedBlog.getStatus()==Integer.parseInt(environment.getProperty("delete"))){
@@ -103,18 +103,52 @@ public class BlogServiceImpl implements BlogService {
         return responseDto;
     }
 
+    @Override
+    public ResponseDto getAllBlogs(GetAllBlogRequestDto requestDto) {
+
+        this.validateIncomingRequest(requestDto);
+
+        this.getLoggedInUser();
+
+
+        return null;
+    }
+
+    private List<Blog> getBlogEntityList(GetAllBlogRequestDto requestDto){
+
+
+
+        return null;
+    }
+
+    private Pageable getPageInfo(GetAllBlogRequestDto requestDto){
+
+        BlogSortField blogSortField = BlogSortField.valueOf(requestDto.getSortBy());
+
+        switch (blogSortField){
+            case TITLE:{
+
+            }
+            case ID:{
+
+            }
+            case CREATEDAT:{
+
+            }
+        }
+        return null;
+    }
+    private void getSpecification(){
+
+    }
 
 
     private List<CommentResponseDto> getBlogCommentsByBlogId(Long blogId){
 
-        List<Comment> allComments = commentRepository.findByBlogIdAndStatusAndType(blogId, Integer.parseInt(environment.getProperty("active")), Integer.parseInt(environment.getProperty("comment")));
-
-      List<CommentResponseDto> allCommentsResponseDto =   allComments.stream().map(c-> this.getResponseDtoForCommentWithReply(c)).collect(Collectors.toList());
+        List<Comment> allComments = commentRepository.findByBlogIdAndStatusAndType(blogId, Integer.parseInt(Objects.requireNonNull(environment.getProperty("active"))), Integer.parseInt(Objects.requireNonNull(environment.getProperty("comment"))));
 
 
-
-
-        return allCommentsResponseDto;
+        return allComments.stream().map(c-> this.getResponseDtoForCommentWithReply(c)).collect(Collectors.toList());
     }
 
 
@@ -127,11 +161,7 @@ public class BlogServiceImpl implements BlogService {
 
     private List<CommentResponseDto> getCommentsReplyDto(List<Comment> replies){
 
-        List<CommentResponseDto> allRepliesDto = new ArrayList<>();
-
-        List<CommentResponseDto> allReplies = replies.stream().map(r -> this.convertCommentEntityToCommentResponseDto(r)).collect(Collectors.toList());
-
-        return allReplies;
+        return replies.stream().map(r -> this.convertCommentEntityToCommentResponseDto(r)).collect(Collectors.toList());
     }
 
 
@@ -151,17 +181,21 @@ public class BlogServiceImpl implements BlogService {
 
     private Integer viewDetailsOfBlog(Blog blog, User user){
 
-        Optional<BlogViewDetails> previousView = blogViewDetailsRepository.findByBlogIdAndViewedById(blog.getId(), user.getId());
+//        Optional<BlogViewDetails> previousView = blogViewDetailsRepository.findFirstByBlogIdAndViewedByIdOrderByViewedAtDesc(blog.getId(), user.getId());
 
-        if(previousView.isEmpty()){
-            BlogViewDetails newView = new BlogViewDetails();
-            newView.setBlog(blog);
-            newView.setViewedBy(user);
-            newView.setViewedAt(LocalDateTime.now(ZoneId.of("UTC")));
-            blogViewDetailsRepository.save(newView);
-        }
+//        if(previousView.isEmpty()){
+            saveNewView(blog, user);
+//        }
 
-        return blogViewDetailsRepository.countByBlogId(blog.getId());
+        return getBlogViews(blog.getId());
+    }
+
+    private void saveNewView(Blog blog, User user) {
+        BlogViewDetails newView = new BlogViewDetails();
+        newView.setBlog(blog);
+        newView.setViewedBy(user);
+        newView.setViewedAt(LocalDateTime.now(ZoneId.of("UTC")));
+        blogViewDetailsRepository.save(newView);
     }
 
     private GetBlogResponseDto getBlogResponseDto(Blog blog,User loggedInUser, Optional<BlogReactionDetails> reaction){
@@ -188,22 +222,22 @@ public class BlogServiceImpl implements BlogService {
             switch (reaction.get().getReaction()){
 
                 case LIKE:{
-                        blogResponseDto.setOwnReaction(Integer.parseInt(environment.getProperty("like")));
+                        blogResponseDto.setOwnReaction(Integer.parseInt(Objects.requireNonNull(environment.getProperty("like"))));
                         break;
                 }
 
                 case LOVE:{
-                    blogResponseDto.setOwnReaction(Integer.parseInt(environment.getProperty("love")));
+                    blogResponseDto.setOwnReaction(Integer.parseInt(Objects.requireNonNull(environment.getProperty("love"))));
                     break;
                 }
 
                 case SUPPORT:{
-                    blogResponseDto.setOwnReaction(Integer.parseInt(environment.getProperty("support")));
+                    blogResponseDto.setOwnReaction(Integer.parseInt(Objects.requireNonNull(environment.getProperty("support"))));
                     break;
                 }
 
                 case FUNNY:{
-                    blogResponseDto.setOwnReaction(Integer.parseInt(environment.getProperty("funny")));
+                    blogResponseDto.setOwnReaction(Integer.parseInt(Objects.requireNonNull(environment.getProperty("funny"))));
                     break;
                 }
 
@@ -222,15 +256,13 @@ public class BlogServiceImpl implements BlogService {
     private List<ReactionDto> getAllReactions(Blog blog){
         List<BlogReactionDetails> reactionList = blogReactedDetailsRepository.findByBlogIdAndIsReacted(blog.getId(), true);
 
-        List<ReactionDto> reactionDtoList = reactionList.stream().map((e) -> new ReactionDto(e, environment)).collect(Collectors.toList());
-
-        return reactionDtoList;
+        return reactionList.stream().map((e) -> new ReactionDto(e, environment)).collect(Collectors.toList());
     }
 
     private User getLoggedInUser() {
         User loggedInUser = authenticationUtil.currentLoggedInUser().getUser();
 
-        if(loggedInUser.getStatus()!=Integer.parseInt(environment.getProperty("active"))){
+        if(loggedInUser.getStatus()!=Integer.parseInt(Objects.requireNonNull(environment.getProperty("active")))){
             throw new ServiceException("USER_NOT_ACTIVE");
         }
         return loggedInUser;
@@ -243,7 +275,7 @@ public class BlogServiceImpl implements BlogService {
 
         User loggedInUser = getLoggedInUser();
 
-        Blog existedBlog = blogRepository.findByIdAndStatus(request.getId(),Integer.parseInt(environment.getProperty("active"))).orElseThrow(() -> new ServiceException("BLOG_NOT_FOUND"));
+        Blog existedBlog = blogRepository.findByIdAndStatus(request.getId(),Integer.parseInt(Objects.requireNonNull(environment.getProperty("active")))).orElseThrow(() -> new ServiceException("BLOG_NOT_FOUND"));
 
         Optional<BlogReactionDetails> reactionOptional = blogReactedDetailsRepository.findByBlogIdAndReactedById(request.getId(), loggedInUser.getId());
 
@@ -254,6 +286,7 @@ public class BlogServiceImpl implements BlogService {
             reaction.setBlog(existedBlog);
             reaction.setReactedBy(loggedInUser);
             reaction.setReactedAt(LocalDateTime.now(ZoneId.of("UTC")));
+            reaction.setIsReacted(request.isReacted());
         }else {
             reaction = reactionOptional.get();
 
@@ -310,7 +343,7 @@ public class BlogServiceImpl implements BlogService {
     @Override
     public ResponseDto postComment(PostCommentRequestDto request) {
 
-        Blog existedBlog = blogRepository.findByIdAndStatus(request.getBlogId(), Integer.parseInt(environment.getProperty("active"))).orElseThrow(() -> new ServiceException("BLOG_NOT_FOUND"));
+        Blog existedBlog = blogRepository.findByIdAndStatus(request.getBlogId(), Integer.parseInt(Objects.requireNonNull(environment.getProperty("active")))).orElseThrow(() -> new ServiceException("BLOG_NOT_FOUND"));
 
         User loggedInUser = this.getLoggedInUser();
 
@@ -332,7 +365,7 @@ public class BlogServiceImpl implements BlogService {
 
         User loggedInUser = this.getLoggedInUser();
 
-        Comment existedComment = commentRepository.findByIdAndStatusAndType(request.getCommentId(), Integer.parseInt(environment.getProperty("active")), Integer.parseInt(environment.getProperty("comment"))).orElseThrow(()-> new ServiceException("Invalid comment id"));
+        Comment existedComment = commentRepository.findByIdAndStatusAndType(request.getCommentId(), Integer.parseInt(Objects.requireNonNull(environment.getProperty("active"))), Integer.parseInt(Objects.requireNonNull(environment.getProperty("comment")))).orElseThrow(()-> new ServiceException("Invalid comment id"));
 
         Comment replyEntity = this.getReplyEntity(request, existedComment.getBlog(), loggedInUser);
 
@@ -363,6 +396,34 @@ public class BlogServiceImpl implements BlogService {
         return responseDto;
     }
 
+    @Override
+    public ResponseDto getViews(IdDto idDto) {
+        validateIncomingRequest(idDto);
+
+        Integer count = getBlogViews(idDto.getId());
+
+        ResponseDto responseDto = new ResponseDto();
+
+        Map<String ,Integer> responseCount = new HashMap<>();
+        
+        responseCount.put("views",count);
+        responseDto.setData(responseCount);
+        responseDto.setMessage("SUCCESS");
+        responseDto.setStatus(true);
+        return responseDto;
+    }
+
+    private Integer getBlogViews(Long id) {
+        Integer count = blogViewDetailsRepository.countDistinctUserIdAndId(id);
+        return count;
+    }
+
+
+    @Override
+    public ResponseDto getReactions(IdDto idDto) {
+        return null;
+    }
+
 
     private Comment getCommentEntity(PostCommentRequestDto request,Blog blog,User loggedInUser){
 
@@ -373,8 +434,8 @@ public class BlogServiceImpl implements BlogService {
         comment.setCommentedBy(loggedInUser);
         comment.setCommentedAt(LocalDateTime.now(ZoneId.of("UTC")));
         comment.setUpdatedAt(comment.getCommentedAt());
-        comment.setStatus(Integer.parseInt(environment.getProperty("active")));
-        comment.setType(Integer.parseInt(environment.getProperty("comment")));
+        comment.setStatus(Integer.parseInt(Objects.requireNonNull(environment.getProperty("active"))));
+        comment.setType(Integer.parseInt(Objects.requireNonNull(environment.getProperty("comment"))));
         return comment;
     }
 
@@ -387,8 +448,8 @@ public class BlogServiceImpl implements BlogService {
         comment.setCommentedBy(loggedInUser);
         comment.setCommentedAt(LocalDateTime.now(ZoneId.of("UTC")));
         comment.setUpdatedAt(comment.getCommentedAt());
-        comment.setStatus(Integer.parseInt(environment.getProperty("active")));
-        comment.setType(Integer.parseInt(environment.getProperty("reply")));
+        comment.setStatus(Integer.parseInt(Objects.requireNonNull(environment.getProperty("active"))));
+        comment.setType(Integer.parseInt(Objects.requireNonNull(environment.getProperty("reply"))));
         return comment;
     }
 
@@ -415,6 +476,15 @@ public class BlogServiceImpl implements BlogService {
 
         else if (object instanceof ReplyCommentRequestDto) {
             ReplyCommentRequestDto request = (ReplyCommentRequestDto) object;
+            request.validateData();
+        }
+        else if (object instanceof GetAllBlogRequestDto) {
+            GetAllBlogRequestDto request = (GetAllBlogRequestDto) object;
+            request.validateData();
+        }
+
+        else if (object instanceof IdDto) {
+            IdDto request = (IdDto) object;
             request.validateData();
         }
         else {
