@@ -2,24 +2,21 @@ package com.blogapplication.blogapplication.blog.dto.response;
 
 import lombok.Data;
 
-import java.util.List;
-
 @Data
-public class CommentResponseDto {
+public class ReplyResponseDto {
 
     private Long id;
 
     private Long blogId;
 
-    private String comment;
+    private String reply;
 
-    private String commentedAt;
+    private String replyAt;
 
-    private Long commentedBy;
+    private Long repliedBy;
+
 
     private Integer status;
 
     private boolean edited;
-
-    private List<ReplyResponseDto> replies;
 }

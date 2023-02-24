@@ -30,14 +30,17 @@ public class Comment {
 
     private LocalDateTime updatedAt;
 
-    @OneToMany
-    private List<Comment> reply;
+
+    private Long referencedCommentId;
+
+//    @OneToMany
+//    private List<Comment> reply;
 
 
     private Integer status;
 
-    // 1 = comment, 2= reply
-    private Integer type;
+//    // 1 = comment, 2= reply
+//    private Integer type;
 
 
 }

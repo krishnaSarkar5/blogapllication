@@ -8,7 +8,11 @@ import java.util.Optional;
 
 public interface CommentRepository extends JpaRepository<Comment,Long> {
 
-    public Optional<Comment> findByIdAndStatusAndType(Long commentId, Integer status, Integer type);
+    public Optional<Comment> findByIdAndStatus(Long commentId, Integer status);
 
-    public List<Comment> findByBlogIdAndStatusAndType(Long blogId,Integer status,Integer type);
+//    public List<Comment> findByBlogIdAndStatus(Long blogId,Integer status,Integer type);
+
+    public List<Comment> findByBlogIdAndStatusAndReferencedCommentId(Long blogId, Integer status, Long refenecedCommentId);
+
+    List<Comment> findByReferencedCommentIdAndStatus(Long blogId,Integer status);
 }
