@@ -1,8 +1,15 @@
 package com.blogapplication.blogapplication.blog.enums;
 
 public enum BlogSearchField {
+
+    ID,
     TITLE,
-    CREATEDBY,
-    CREATEDAT,
-    FEATURED
+
+    DESCRIPTION,
+    CREATEDBY_NAME,
+
+    UPDATEDAT,
+    FEATURED,
+
+    CREATEDAT
 }

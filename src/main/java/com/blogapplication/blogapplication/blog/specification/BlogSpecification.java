@@ -51,7 +51,7 @@ public class BlogSpecification implements Specification<Blog> {
                     this.creationTimeSearch(root,criteriaBuilder,predicateList,searchCriteria);
                     break;
                 }
-                case CREATEDBY:{
+                case CREATEDBY_NAME:{
                     this.creatorSearch(root,criteriaBuilder,predicateList,searchCriteria);
                     break;
                 }
