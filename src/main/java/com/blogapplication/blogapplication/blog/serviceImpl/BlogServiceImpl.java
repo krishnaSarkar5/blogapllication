@@ -2,10 +2,7 @@ package com.blogapplication.blogapplication.blog.serviceImpl;
 
 import com.blogapplication.blogapplication.authentication.dto.ResponseDto;
 import com.blogapplication.blogapplication.blog.dto.request.*;
-import com.blogapplication.blogapplication.blog.dto.response.CommentResponseDto;
-import com.blogapplication.blogapplication.blog.dto.response.GetBlogResponseDto;
-import com.blogapplication.blogapplication.blog.dto.response.ReactionDto;
-import com.blogapplication.blogapplication.blog.dto.response.ReplyResponseDto;
+import com.blogapplication.blogapplication.blog.dto.response.*;
 import com.blogapplication.blogapplication.blog.entity.Blog;
 import com.blogapplication.blogapplication.blog.entity.BlogReactionDetails;
 import com.blogapplication.blogapplication.blog.entity.BlogViewDetails;
@@ -17,15 +14,20 @@ import com.blogapplication.blogapplication.blog.repositoty.BlogRepository;
 import com.blogapplication.blogapplication.blog.repositoty.BlogViewDetailsRepository;
 import com.blogapplication.blogapplication.blog.repositoty.CommentRepository;
 import com.blogapplication.blogapplication.blog.service.BlogService;
+import com.blogapplication.blogapplication.blog.specification.BlogSpecification;
+import com.blogapplication.blogapplication.common.dto.SeacrhCriteria;
 import com.blogapplication.blogapplication.common.dto.requestDto.IdDto;
 import com.blogapplication.blogapplication.common.exceptiom.ServiceException;
 import com.blogapplication.blogapplication.common.utility.AuthenticationUtil;
 import com.blogapplication.blogapplication.user.entity.User;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.env.Environment;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
+import javax.persistence.Tuple;
 import javax.transaction.Transactional;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
@@ -111,8 +113,110 @@ public class BlogServiceImpl implements BlogService {
 
         this.getLoggedInUser();
 
+//        List<Blog> blogsFromDb = getBlogsFromDb(requestDto);
 
         return null;
+    }
+
+
+
+    private Map<Long,Integer> getViewDetailsOfBlog(List<Long> blogIdList){
+
+        List<Tuple> tuples = blogViewDetailsRepository.countOfViewsByBlogId(blogIdList);
+
+        return convertTupleToMap(tuples);
+    }
+
+    private Map<Long,Integer> convertTupleToMap(List<Tuple> tuples){
+
+        Map<Long,Integer> map = new HashMap<>();
+
+        for(Tuple t : tuples){
+            map.put(Long.parseLong(t.get("blog_id").toString()),Integer.parseInt(t.get("views").toString()));
+        }
+        return  map;
+    }
+
+    private GetAllBlogResponseWithCountDto getBlogsFromDb(GetAllBlogRequestDto request){
+
+
+
+
+        PageRequest pageInformation = getPageInformation(request);
+
+        if(request.getSearchField().size()>0){
+
+            List<SeacrhCriteria> criteriaList = getCriteriaList(request);
+
+            BlogSpecification specification = new BlogSpecification(criteriaList);
+
+            List<Blog> allBlogsWithPage = blogRepository.findAll(specification, pageInformation);
+
+            List<Blog> allBlogs = blogRepository.findAll(specification);
+
+            return getGetAllBlogResponseWithCountDto(allBlogsWithPage, allBlogs.size());
+
+
+        }else {
+            List<Blog> allBlogs = blogRepository.findAll(pageInformation).getContent();
+
+           return getGetAllBlogResponseWithCountDto(allBlogs,allBlogs.size());
+        }
+
+  
+    }
+
+    private GetAllBlogResponseWithCountDto getGetAllBlogResponseWithCountDto(List<Blog> blogList, Integer allPosssibleResultSize) {
+        List<Long> blogIdList = blogList.stream().map(b -> b.getId()).collect(Collectors.toList());
+
+        Map<Long, Integer> viewDetailsOfBlog = getViewDetailsOfBlog(blogIdList);
+
+        List<GetAllBlogResponseDto> blogResponseDtoList = getBlogResponseDtoList(blogList);
+
+
+        for (GetAllBlogResponseDto blogResponseDto : blogResponseDtoList){
+            blogResponseDto.setViews(viewDetailsOfBlog.get(blogResponseDto.getId()));
+        }
+
+        GetAllBlogResponseWithCountDto getAllBlogResponseWithCountDto = new GetAllBlogResponseWithCountDto(allPosssibleResultSize,blogResponseDtoList);
+        return getAllBlogResponseWithCountDto;
+    }
+
+
+    private List<GetAllBlogResponseDto> getBlogResponseDtoList(List<Blog> allBlogs){
+
+        List<GetAllBlogResponseDto> blogResponseDtoList = new ArrayList<>();
+
+        return allBlogs.stream().map(b-> new GetAllBlogResponseDto(b)).collect(Collectors.toList());
+
+    }
+
+
+    private PageRequest getPageInformation(GetAllBlogRequestDto request){
+
+        int pageSize = request.getPageSize()==0?Integer.parseInt(environment.getProperty("defaultPageSize")):request.getPageSize();
+        int offset = request.getOffset()==0?Integer.parseInt(environment.getProperty("defaultOffset")):request.getOffset();
+
+        String sortBy =!Objects.isNull(request.getSortBy()) && !request.getSortBy().trim().equalsIgnoreCase("")?request.getSortBy():"id";
+
+        String orderType = !Objects.isNull(request.getOrderType()) && !request.getOrderType().trim().equalsIgnoreCase("")?request.getOrderType().trim():"asc";
+
+        return PageRequest.of(offset,pageSize).withSort(Sort.by(Sort.Direction.fromString(orderType),sortBy));
+    }
+
+    private List<SeacrhCriteria> getCriteriaList(GetAllBlogRequestDto request){
+
+        List<SeacrhCriteria> criteriaList = new ArrayList<>();
+
+        for(int i=0;i<request.getSearchField().size();i++){
+            SeacrhCriteria seacrhCriteria = new SeacrhCriteria(request.getSearchField().get(i),request.getSearchFieldValue().get(i));
+            criteriaList.add(seacrhCriteria);
+        }
+
+
+        return criteriaList;
+
+
     }
 
     private List<Blog> getBlogEntityList(GetAllBlogRequestDto requestDto){
