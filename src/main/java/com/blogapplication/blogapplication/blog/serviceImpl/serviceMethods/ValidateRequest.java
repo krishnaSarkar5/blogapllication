@@ -1,4 +1,4 @@
-package com.blogapplication.blogapplication.user.serviceImpl.serviceMethods;
+package com.blogapplication.blogapplication.blog.serviceImpl.serviceMethods;
 
 import com.blogapplication.blogapplication.blog.dto.request.*;
 import com.blogapplication.blogapplication.common.dto.requestDto.IdDto;

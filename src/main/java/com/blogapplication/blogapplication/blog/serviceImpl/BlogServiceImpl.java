@@ -20,7 +20,7 @@ import com.blogapplication.blogapplication.common.dto.requestDto.IdDto;
 import com.blogapplication.blogapplication.common.exceptiom.ServiceException;
 import com.blogapplication.blogapplication.common.utility.AuthenticationUtil;
 import com.blogapplication.blogapplication.user.entity.User;
-import com.blogapplication.blogapplication.user.serviceImpl.serviceMethods.CreateBlog;
+import com.blogapplication.blogapplication.blog.serviceImpl.serviceMethods.CreateBlog;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.env.Environment;
 import org.springframework.data.domain.PageRequest;
