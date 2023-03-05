@@ -14,4 +14,6 @@ public class SeacrhCriteria {
 
     private Object value;
 
+//    private Operation operation;
+
 }

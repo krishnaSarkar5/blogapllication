@@ -85,20 +85,23 @@ public class BlogSpecification implements Specification<Blog> {
 
     private void creationTimeSearch(Root<Blog> root, CriteriaBuilder criteriaBuilder, List<Predicate> predicateList,SeacrhCriteria searchCriteria){
 
-        switch (searchCriteria.getOperation()){
-            case GREATERTHANEQUAL:{
-                predicateList.add(criteriaBuilder.greaterThanOrEqualTo( root.get(searchCriteria.getField()), LocalDateTime.parse(searchCriteria.getValue().toString(), DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm:ss"))));
-                break;
-            }
+        predicateList.add(criteriaBuilder.equal( root.get(searchCriteria.getField()), LocalDateTime.parse(searchCriteria.getValue().toString(), DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm:ss"))));
 
-            case LESSTHANEQUAL:{
-                predicateList.add(criteriaBuilder.lessThanOrEqualTo( root.get(searchCriteria.getField()), LocalDateTime.parse(searchCriteria.getValue().toString(), DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm:ss"))));
-                break;
-            }
-            default:{
-                break;
-            }
-        }
+
+//        switch (searchCriteria.getOperation()){
+//            case GREATERTHANEQUAL:{
+//                predicateList.add(criteriaBuilder.greaterThanOrEqualTo( root.get(searchCriteria.getField()), LocalDateTime.parse(searchCriteria.getValue().toString(), DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm:ss"))));
+//                break;
+//            }
+//
+//            case LESSTHANEQUAL:{
+//                predicateList.add(criteriaBuilder.lessThanOrEqualTo( root.get(searchCriteria.getField()), LocalDateTime.parse(searchCriteria.getValue().toString(), DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm:ss"))));
+//                break;
+//            }
+//            default:{
+//                break;
+//            }
+//        }
 
 
 
