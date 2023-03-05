@@ -14,6 +14,7 @@ import com.blogapplication.blogapplication.blog.repositoty.BlogRepository;
 import com.blogapplication.blogapplication.blog.repositoty.BlogViewDetailsRepository;
 import com.blogapplication.blogapplication.blog.repositoty.CommentRepository;
 import com.blogapplication.blogapplication.blog.service.BlogService;
+import com.blogapplication.blogapplication.blog.serviceImpl.serviceMethods.GetBlog;
 import com.blogapplication.blogapplication.blog.specification.BlogSpecification;
 import com.blogapplication.blogapplication.common.dto.SeacrhCriteria;
 import com.blogapplication.blogapplication.common.dto.requestDto.IdDto;
@@ -60,54 +61,19 @@ public class BlogServiceImpl implements BlogService {
     @Autowired
     private CreateBlog createBlog;
 
+    @Autowired
+    private GetBlog getBlog;
+
     @Override
     public ResponseDto createBlog(CreateBlogRequestDto request) {
-//        this.validateIncomingRequest(request);
-//
-//        User loggedInUser = authenticationUtil.currentLoggedInUser().getUser();
-//
-//        Blog newBlogEntity = request.getNewBlogEntity();
-//
-//        newBlogEntity.setCreatedBy(loggedInUser);
-//        newBlogEntity.setStatus(Integer.parseInt(environment.getProperty("active")));
-//
-//        blogRepository.save(newBlogEntity);
-//
-//        ResponseDto responseDto = new ResponseDto();
-//
-//        responseDto.setStatus(true);
-//        responseDto.setMessage(environment.getProperty("successResponse"));
-//        responseDto.setMessage(environment.getProperty("blogCreated"));
 
         return createBlog.createNewBlog(request);
     }
 
     @Override
-    @Transactional
     public ResponseDto getABlog(GetBlogRequestDto request) {
 
-        this.validateIncomingRequest(request);
-
-        User loggedInUser = getLoggedInUser();
-
-        Blog existedBlog = blogRepository.findByIdAndStatus(request.getId(),Integer.parseInt(Objects.requireNonNull(environment.getProperty("active")))).orElseThrow(() -> new ServiceException("BLOG_NOT_FOUND"));
-
-        if(existedBlog.getStatus()==Integer.parseInt(environment.getProperty("inactive"))
-        || existedBlog.getStatus()==Integer.parseInt(environment.getProperty("delete"))){
-            throw new ServiceException("Invalid Blog");
-        }
-
-        Optional<BlogReactionDetails> reaction = blogReactedDetailsRepository.findByBlogIdAndReactedByIdAndIsReacted(existedBlog.getId(), loggedInUser.getId(), true);
-
-        GetBlogResponseDto blogResponseDto = this.getBlogResponseDto(existedBlog,loggedInUser ,reaction);
-
-
-        ResponseDto responseDto = new ResponseDto();
-        responseDto.setStatus(true);
-        responseDto.setMessage(environment.getProperty("successResponse"));
-        responseDto.setData(blogResponseDto);
-
-        return responseDto;
+        return getBlog.getABlog(request);
     }
 
     @Override
