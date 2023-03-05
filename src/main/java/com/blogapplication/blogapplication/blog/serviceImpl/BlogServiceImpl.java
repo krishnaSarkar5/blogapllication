@@ -20,6 +20,7 @@ import com.blogapplication.blogapplication.common.dto.requestDto.IdDto;
 import com.blogapplication.blogapplication.common.exceptiom.ServiceException;
 import com.blogapplication.blogapplication.common.utility.AuthenticationUtil;
 import com.blogapplication.blogapplication.user.entity.User;
+import com.blogapplication.blogapplication.user.serviceImpl.serviceMethods.CreateBlog;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.env.Environment;
 import org.springframework.data.domain.PageRequest;
@@ -56,26 +57,29 @@ public class BlogServiceImpl implements BlogService {
     @Autowired
     private CommentRepository commentRepository;
 
+    @Autowired
+    private CreateBlog createBlog;
+
     @Override
     public ResponseDto createBlog(CreateBlogRequestDto request) {
-        this.validateIncomingRequest(request);
+//        this.validateIncomingRequest(request);
+//
+//        User loggedInUser = authenticationUtil.currentLoggedInUser().getUser();
+//
+//        Blog newBlogEntity = request.getNewBlogEntity();
+//
+//        newBlogEntity.setCreatedBy(loggedInUser);
+//        newBlogEntity.setStatus(Integer.parseInt(environment.getProperty("active")));
+//
+//        blogRepository.save(newBlogEntity);
+//
+//        ResponseDto responseDto = new ResponseDto();
+//
+//        responseDto.setStatus(true);
+//        responseDto.setMessage(environment.getProperty("successResponse"));
+//        responseDto.setMessage(environment.getProperty("blogCreated"));
 
-        User loggedInUser = authenticationUtil.currentLoggedInUser().getUser();
-
-        Blog newBlogEntity = request.getNewBlogEntity();
-
-        newBlogEntity.setCreatedBy(loggedInUser);
-        newBlogEntity.setStatus(Integer.parseInt(environment.getProperty("active")));
-
-        blogRepository.save(newBlogEntity);
-
-        ResponseDto responseDto = new ResponseDto();
-
-        responseDto.setStatus(true);
-        responseDto.setMessage(environment.getProperty("successResponse"));
-        responseDto.setMessage(environment.getProperty("blogCreated"));
-
-        return responseDto;
+        return createBlog.createNewBlog(request);
     }
 
     @Override
