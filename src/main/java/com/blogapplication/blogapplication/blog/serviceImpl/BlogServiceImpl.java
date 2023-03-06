@@ -15,6 +15,7 @@ import com.blogapplication.blogapplication.blog.repositoty.BlogViewDetailsReposi
 import com.blogapplication.blogapplication.blog.repositoty.CommentRepository;
 import com.blogapplication.blogapplication.blog.service.BlogService;
 import com.blogapplication.blogapplication.blog.serviceImpl.serviceMethods.GetBlog;
+import com.blogapplication.blogapplication.blog.serviceImpl.serviceMethods.ReactBlog;
 import com.blogapplication.blogapplication.blog.specification.BlogSpecification;
 import com.blogapplication.blogapplication.common.dto.SeacrhCriteria;
 import com.blogapplication.blogapplication.common.dto.requestDto.IdDto;
@@ -64,12 +65,19 @@ public class BlogServiceImpl implements BlogService {
     @Autowired
     private GetBlog getBlog;
 
+    @Autowired
+    private ReactBlog reactBlog;
+
+
+
+    // done
     @Override
     public ResponseDto createBlog(CreateBlogRequestDto request) {
 
         return createBlog.createNewBlog(request);
     }
 
+    //done
     @Override
     public ResponseDto getABlog(GetBlogRequestDto request) {
 
@@ -365,76 +373,77 @@ public class BlogServiceImpl implements BlogService {
         return loggedInUser;
     }
 
+    //done
     @Override
     public ResponseDto reactBlog(ReactBlogRequestDto request) {
 
-        this.validateIncomingRequest(request);
+//        this.validateIncomingRequest(request);
+//
+//        User loggedInUser = getLoggedInUser();
+//
+//        Blog existedBlog = blogRepository.findByIdAndStatus(request.getId(),Integer.parseInt(Objects.requireNonNull(environment.getProperty("active")))).orElseThrow(() -> new ServiceException("BLOG_NOT_FOUND"));
+//
+//        Optional<BlogReactionDetails> reactionOptional = blogReactedDetailsRepository.findByBlogIdAndReactedById(request.getId(), loggedInUser.getId());
+//
+//        BlogReactionDetails reaction = new BlogReactionDetails();
+//
+//        if(reactionOptional.isEmpty()){
+//            reaction = new BlogReactionDetails();
+//            reaction.setBlog(existedBlog);
+//            reaction.setReactedBy(loggedInUser);
+//            reaction.setReactedAt(LocalDateTime.now(ZoneId.of("UTC")));
+//            reaction.setIsReacted(request.isReacted());
+//        }else {
+//            reaction = reactionOptional.get();
+//
+//        }
+//
+//
+//        if(request.isReacted() && !Objects.isNull(request.getReactionValue())){
+//
+//            switch (request.getReactionValue()){
+//
+//                case 1 : {
+//                    reaction.setReaction(Reaction.LIKE);
+//                    break;
+//                }
+//                case 2 : {
+//                    reaction.setReaction(Reaction.LOVE);
+//                    break;
+//                }
+//                case 3 : {
+//                    reaction.setReaction(Reaction.SUPPORT);
+//                    break;
+//                }
+//                case 4 : {
+//                    reaction.setReaction(Reaction.FUNNY);
+//                    break;
+//                }
+//                default: {
+//                    reaction.setReaction(null);
+//                }
+//
+//
+//            }
+//            reaction.setIsReacted(true);
+//        }else {
+//
+//            if(!reaction.getIsReacted()){
+//                throw new ServiceException("NOT_REACTED");
+//            }
+//            reaction.setReaction(null);
+//            reaction.setIsReacted(false);
+//        }
+//
+//        reaction.setReactedAt(LocalDateTime.now(ZoneId.of("UTC")));
+//        blogReactedDetailsRepository.save(reaction);
+//
+//        ResponseDto responseDto = new ResponseDto();
+//        responseDto.setData(environment.getProperty("reactionAdded"));
+//        responseDto.setMessage(environment.getProperty("successResponse"));
+//        responseDto.setStatus(true);
 
-        User loggedInUser = getLoggedInUser();
-
-        Blog existedBlog = blogRepository.findByIdAndStatus(request.getId(),Integer.parseInt(Objects.requireNonNull(environment.getProperty("active")))).orElseThrow(() -> new ServiceException("BLOG_NOT_FOUND"));
-
-        Optional<BlogReactionDetails> reactionOptional = blogReactedDetailsRepository.findByBlogIdAndReactedById(request.getId(), loggedInUser.getId());
-
-        BlogReactionDetails reaction = new BlogReactionDetails();
-
-        if(reactionOptional.isEmpty()){
-            reaction = new BlogReactionDetails();
-            reaction.setBlog(existedBlog);
-            reaction.setReactedBy(loggedInUser);
-            reaction.setReactedAt(LocalDateTime.now(ZoneId.of("UTC")));
-            reaction.setIsReacted(request.isReacted());
-        }else {
-            reaction = reactionOptional.get();
-
-        }
-
-
-        if(request.isReacted() && !Objects.isNull(request.getReactionValue())){
-
-            switch (request.getReactionValue()){
-
-                case 1 : {
-                    reaction.setReaction(Reaction.LIKE);
-                    break;
-                }
-                case 2 : {
-                    reaction.setReaction(Reaction.LOVE);
-                    break;
-                }
-                case 3 : {
-                    reaction.setReaction(Reaction.SUPPORT);
-                    break;
-                }
-                case 4 : {
-                    reaction.setReaction(Reaction.FUNNY);
-                    break;
-                }
-                default: {
-                    reaction.setReaction(null);
-                }
-
-
-            }
-            reaction.setIsReacted(true);
-        }else {
-
-            if(!reaction.getIsReacted()){
-                throw new ServiceException("NOT_REACTED");
-            }
-            reaction.setReaction(null);
-            reaction.setIsReacted(false);
-        }
-
-        reaction.setReactedAt(LocalDateTime.now(ZoneId.of("UTC")));
-        blogReactedDetailsRepository.save(reaction);
-
-        ResponseDto responseDto = new ResponseDto();
-        responseDto.setData(environment.getProperty("reactionAdded"));
-        responseDto.setMessage(environment.getProperty("successResponse"));
-        responseDto.setStatus(true);
-
-        return responseDto;
+        return reactBlog.reactABlog(request);
     }
 
     @Override
