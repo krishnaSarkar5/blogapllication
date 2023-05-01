@@ -69,11 +69,6 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter{
                         "/v2/api-docs", "/configuration/**","/demo/**",
                         "/webjars/**","/authentication/login","/user/create-user").permitAll()
 
-
-
-
-
-
                 .anyRequest().authenticated()
                 .and().exceptionHandling().authenticationEntryPoint(jwtAuthenticationEntryPoint)
                 .and().sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS);

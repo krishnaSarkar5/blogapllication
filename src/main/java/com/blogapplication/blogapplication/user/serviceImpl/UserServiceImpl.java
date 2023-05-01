@@ -31,6 +31,9 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public ResponseDto createUser(CreateUserRequestDto createUserRequestDto) {
+
+//       int x= 1/0;
+
         this.validateCreateUserRequestDto(createUserRequestDto);
 
         User newUser = new User(createUserRequestDto);

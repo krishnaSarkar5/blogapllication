@@ -15,12 +15,14 @@ import com.blogapplication.blogapplication.user.entity.User;
 import com.blogapplication.blogapplication.user.serviceImpl.serviceMethods.LoggedInUser;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.env.Environment;
+import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.Objects;
 import java.util.Optional;
 
+@Service
 public class ReactBlog {
 
     @Autowired

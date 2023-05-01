@@ -37,6 +37,9 @@ public class Blog {
     @ManyToOne
     private User createdBy;
 
+    @ManyToOne
+    private BlogCategory blogCategory;
+
 
     public BlogReactionDetails likeBlog(User likedBy){
 
