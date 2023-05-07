@@ -52,7 +52,7 @@ public class UserServiceImpl implements UserService {
 
     private void validateCreateUserRequestDto(CreateUserRequestDto createUserRequestDto){
 
-        Map<String,String> errorMap = new HashMap<>();
+        Map<String,Object> errorMap = new HashMap<>();
 
         if(Objects.isNull(createUserRequestDto)){
             errorMap.put("Invalid Data","Request body is null");

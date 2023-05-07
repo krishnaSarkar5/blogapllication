@@ -38,6 +38,7 @@ public class Blog {
     private User createdBy;
 
     @ManyToOne
+    @JoinColumn(name = "blog_category_id")
     private BlogCategory blogCategory;
 
 

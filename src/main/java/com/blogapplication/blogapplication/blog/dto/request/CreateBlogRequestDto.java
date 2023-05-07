@@ -28,7 +28,7 @@ public class CreateBlogRequestDto {
     @JsonIgnore
     public void validateData(){
 
-        Map<String,String> errorMap = new HashMap<>();
+        Map<String,Object> errorMap = new HashMap<>();
 
         if(Objects.isNull(this.title)){
             errorMap.put("title","Should not be empty or null");

@@ -12,5 +12,5 @@ public class ErrorMessage {
 	
 	private String message;
 	
-	private Map<String, String> indexError;
+	private Map<String, Object> indexError;
 }

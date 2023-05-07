@@ -19,7 +19,7 @@ public class PostCommentRequestDto {
     @JsonIgnore
     public void validateData(){
 
-        Map<String ,String > errorMap = new HashMap<>();
+        Map<String ,Object > errorMap = new HashMap<>();
 
         if(Objects.isNull(this.blogId) || this.blogId==0l){
             errorMap.put("blog id","INVALID BLOG ID");

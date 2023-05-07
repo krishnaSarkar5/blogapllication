@@ -33,6 +33,15 @@ public class User {
 
     private LocalDateTime createdAt;
 
+
+    private LocalDateTime updatedAt;
+
+    // 0 = inactive 1 = active
+    private Integer status;
+
+    private String role;
+
+
     public User(CreateUserRequestDto createUserRequestDto) {
         this.email = createUserRequestDto.getEmail();
         this.phone = createUserRequestDto.getPhone();
@@ -44,10 +53,5 @@ public class User {
         this.role = "ROLE_USER";
     }
 
-    private LocalDateTime updatedAt;
 
-    // 0 = inactive 1 = active
-    private Integer status;
-
-    private String role;
 }

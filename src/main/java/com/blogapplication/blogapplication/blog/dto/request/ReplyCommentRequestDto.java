@@ -18,7 +18,7 @@ public class ReplyCommentRequestDto {
     @JsonIgnore
     public void validateData(){
 
-        Map<String ,String > errorMap = new HashMap<>();
+        Map<String ,Object > errorMap = new HashMap<>();
 
         if(Objects.isNull(this.commentId) || this.commentId==0l){
             errorMap.put("blog id","INVALID COMMENT ID");

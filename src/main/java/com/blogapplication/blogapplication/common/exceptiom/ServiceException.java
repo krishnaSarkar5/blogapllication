@@ -14,7 +14,7 @@ public class ServiceException extends RuntimeException{
 	 */
 	private static final long serialVersionUID = 1L;
 	private String message;
-	private Map<String, String> indexError;
+	private Map<String, Object> indexError;
 	private HttpStatus status;
 	
 	public ServiceException(String message) {
@@ -31,8 +31,14 @@ public class ServiceException extends RuntimeException{
 		this.status = status;
 	}
 
-	public ServiceException(String message, Map<String, String> index) {
+	public ServiceException(String message, Map<String, Object> index) {
 		this.message = message;
+		this.indexError = index;
+		this.status = HttpStatus.BAD_REQUEST;
+	}
+
+	public ServiceException( Map<String, Object> index) {
+//		this.message = message;
 		this.indexError = index;
 		this.status = HttpStatus.BAD_REQUEST;
 	}

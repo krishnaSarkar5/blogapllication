@@ -104,7 +104,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
 
     private void validateLoginRequestData(LoginDto loginDto) {
 
-        Map<String ,String > errorMap = new HashMap<>();
+        Map<String ,Object > errorMap = new HashMap<>();
 
         if(Objects.isNull(loginDto)){
             errorMap.put("requestBody","Request Body Is null");

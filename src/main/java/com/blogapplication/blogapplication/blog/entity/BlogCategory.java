@@ -1,6 +1,7 @@
 package com.blogapplication.blogapplication.blog.entity;
 
 
+import com.blogapplication.blogapplication.blog.dto.request.SaveCategoryRequestDto;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -24,8 +25,18 @@ public class BlogCategory {
 
     private String title;
 
+    private String image;
+
     @CreationTimestamp
     private LocalDateTime createdAt;
 
     private Integer status;
+
+
+    public static BlogCategory getCategoryInstanceFromDyo(SaveCategoryRequestDto request){
+        return BlogCategory.builder()
+                .title(request.getTitle())
+                .image(request.getImage())
+                .build();
+    }
 }
