@@ -1,7 +1,9 @@
 package com.blogapplication.blogapplication.user.serviceImpl;
 
 import com.blogapplication.blogapplication.authentication.dto.ResponseDto;
+import com.blogapplication.blogapplication.common.dto.responsedtos.GetUserResponseDto;
 import com.blogapplication.blogapplication.common.exceptiom.ServiceException;
+import com.blogapplication.blogapplication.common.utility.AuthenticationUtil;
 import com.blogapplication.blogapplication.common.utility.CommonUtils;
 import com.blogapplication.blogapplication.user.dto.CreateUserRequestDto;
 import com.blogapplication.blogapplication.user.entity.User;
@@ -27,6 +29,9 @@ public class UserServiceImpl implements UserService {
 
     @Autowired
     private Environment environment;
+    
+    @Autowired
+    private AuthenticationUtil authenticationUtil;
 
 
     @Override
@@ -47,6 +52,19 @@ public class UserServiceImpl implements UserService {
         responseDto.setStatus(true);
         responseDto.setMessage(environment.getProperty("successResponse"));
         responseDto.setData(environment.getProperty("userCreated"));
+        return responseDto;
+    }
+
+    @Override
+    public ResponseDto getUser() {
+        User user = authenticationUtil.currentLoggedInUser().getUser();
+
+        GetUserResponseDto getUserResponseDto = new GetUserResponseDto(user);
+
+        ResponseDto responseDto = new ResponseDto();
+        responseDto.setStatus(true);
+        responseDto.setMessage(environment.getProperty("successResponse"));
+        responseDto.setData(getUserResponseDto);
         return responseDto;
     }
 

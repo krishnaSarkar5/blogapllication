@@ -6,4 +6,6 @@ import com.blogapplication.blogapplication.user.dto.CreateUserRequestDto;
 public interface UserService {
 
     public ResponseDto createUser(CreateUserRequestDto createUserRequestDto);
+
+    public ResponseDto getUser();
 }
