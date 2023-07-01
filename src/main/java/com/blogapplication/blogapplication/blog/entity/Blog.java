@@ -29,10 +29,13 @@ public class Blog {
 
     private Boolean featured;
 
-    @ElementCollection // 1
-    @CollectionTable(name = "image_list", joinColumns = @JoinColumn(name = "blog_id")) // 2
-    @Column(name = "image") // 3
-    private List<String> images;
+//    @ElementCollection // 1
+//    @CollectionTable(name = "image_list", joinColumns = @JoinColumn(name = "blog_id")) // 2
+//    @Column(name = "image") // 3
+//    private List<String> images;
+    @Column(name = "image" ,columnDefinition = "LONGTEXT")
+    private String image;
+
 
     @ManyToOne
     private User createdBy;

@@ -25,7 +25,7 @@ public class GetAllBlogResponseDto {
 
     private Boolean featured;
 
-    private List<String> images;
+    private String image;
 
     private Long createdBy;
 
@@ -52,7 +52,7 @@ public class GetAllBlogResponseDto {
 
         this.featured = blog.getFeatured();
 
-        this.images = blog.getImages();
+        this.image = blog.getImage();
 
         this.createdBy = blog.getCreatedBy().getId();
 

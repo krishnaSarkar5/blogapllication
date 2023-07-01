@@ -20,7 +20,7 @@ public class GetBlogResponseDto {
 
     private Boolean featured;
 
-    private List<String> images;
+    private String image;
 
     private Long createdBy;
 

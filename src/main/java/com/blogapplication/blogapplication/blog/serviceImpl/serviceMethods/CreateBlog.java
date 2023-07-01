@@ -1,17 +1,23 @@
 package com.blogapplication.blogapplication.blog.serviceImpl.serviceMethods;
 
 import com.blogapplication.blogapplication.authentication.dto.ResponseDto;
+import com.blogapplication.blogapplication.blog.daoService.CategoryDaoService;
 import com.blogapplication.blogapplication.blog.dto.request.*;
 import com.blogapplication.blogapplication.blog.entity.Blog;
+import com.blogapplication.blogapplication.blog.entity.BlogCategory;
 import com.blogapplication.blogapplication.blog.repositoty.BlogReactionDetailsRepository;
 import com.blogapplication.blogapplication.blog.repositoty.BlogRepository;
 import com.blogapplication.blogapplication.blog.repositoty.BlogViewDetailsRepository;
 import com.blogapplication.blogapplication.blog.repositoty.CommentRepository;
+import com.blogapplication.blogapplication.common.exceptiom.ServiceException;
 import com.blogapplication.blogapplication.common.utility.AuthenticationUtil;
 import com.blogapplication.blogapplication.user.entity.User;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Component;
+import org.springframework.web.server.ServerErrorException;
+
+import java.util.Map;
 
 @Component
 public class CreateBlog {
@@ -37,12 +43,15 @@ public class CreateBlog {
     @Autowired
     private ValidateRequest validateRequest;
 
+    @Autowired
+    private CategoryDaoService categoryDaoService;
+
     public ResponseDto createNewBlog(CreateBlogRequestDto request) {
         validateRequest.validateIncomingRequest(request);
 
         User loggedInUser = authenticationUtil.currentLoggedInUser().getUser();
 
-        Blog newBlogEntity = request.getNewBlogEntity();
+        Blog newBlogEntity = request.getNewBlogEntity(getCategoryById(request.getCategoryId()));
 
         newBlogEntity.setCreatedBy(loggedInUser);
         newBlogEntity.setStatus(Integer.parseInt(environment.getProperty("active")));
@@ -59,5 +68,8 @@ public class CreateBlog {
     }
 
 
+    private BlogCategory getCategoryById(Long id){
+        return categoryDaoService.getBlogById(id).orElseThrow(()->new ServiceException(Map.of("message","Invalid category id")));
+    }
 
 }

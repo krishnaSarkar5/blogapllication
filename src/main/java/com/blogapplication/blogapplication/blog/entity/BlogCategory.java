@@ -25,6 +25,7 @@ public class BlogCategory {
 
     private String title;
 
+    @Column(name = "image" ,columnDefinition = "LONGTEXT")
     private String image;
 
     @CreationTimestamp

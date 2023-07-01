@@ -2,6 +2,7 @@ package com.blogapplication.blogapplication.blog.dto.request;
 
 
 import com.blogapplication.blogapplication.blog.entity.Blog;
+import com.blogapplication.blogapplication.blog.entity.BlogCategory;
 import com.blogapplication.blogapplication.common.exceptiom.ServiceException;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
@@ -20,10 +21,11 @@ public class CreateBlogRequestDto {
 
     private String description;
 
-
     private Boolean featured = false;
 
-    private List<String> blogImageBase64Code;
+    private String blogImageBase64Code;
+
+    private Long categoryId;
 
     @JsonIgnore
     public void validateData(){
@@ -38,12 +40,16 @@ public class CreateBlogRequestDto {
             errorMap.put("description","Should not be empty or null");
         }
 
+        if(Objects.isNull(this.categoryId) || categoryId.equals(0l)){
+            errorMap.put("categoryId","Should not be empty or null");
+        }
+
         if(errorMap.size()>0){
             throw new ServiceException("Invalid Data",errorMap);
         }
     }
     @JsonIgnore
-    public Blog getNewBlogEntity(){
+    public Blog getNewBlogEntity(BlogCategory category){
 
         Blog newBlog = new Blog();
 
@@ -51,9 +57,9 @@ public class CreateBlogRequestDto {
         newBlog.setDescription(this.description);
         newBlog.setFeatured(this.featured);
 
-        if(!this.blogImageBase64Code.isEmpty()){
-            newBlog.setImages(this.blogImageBase64Code);
-        }
+        newBlog.setImage(this.blogImageBase64Code);
+
+        newBlog.setBlogCategory(category);
 
         newBlog.setCreatedAt(LocalDateTime.now(ZoneId.of("UTC")));
         newBlog.setUpdatedAt(newBlog.getCreatedAt());

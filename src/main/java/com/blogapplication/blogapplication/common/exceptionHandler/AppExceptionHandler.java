@@ -19,7 +19,7 @@ import org.springframework.web.context.request.WebRequest;
 
 
 
-@RestControllerAdvice
+//@RestControllerAdvice
 public class AppExceptionHandler {
 
 

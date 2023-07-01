@@ -312,7 +312,7 @@ public class BlogServiceImpl implements BlogService {
         blogResponseDto.setFeatured(blog.getFeatured());
         blogResponseDto.setDescription(blog.getDescription());
         blogResponseDto.setTitle(blog.getTitle());
-        blogResponseDto.setImages(blog.getImages());
+        blogResponseDto.setImage(blog.getImage());
         blogResponseDto.setCreatedBy(blog.getCreatedBy().getId());
         blogResponseDto.setCreatedAt(blog.getCreatedAt().format(DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm:ss")));
         blogResponseDto.setEdited(!blog.getUpdatedAt().isEqual(blog.getCreatedAt()));
