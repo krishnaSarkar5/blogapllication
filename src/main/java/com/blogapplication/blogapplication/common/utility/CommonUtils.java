@@ -59,7 +59,7 @@ public class CommonUtils {
 		 
 	    	
 	        // Regex to check string contains only digits
-	        String regex = "[0-9]+";
+	        String regex = "^[0-9]{10}$";
 	        Pattern p = Pattern.compile(regex);
 	        
 	        if (!(!Objects.isNull(str) && !str.isBlank())) {

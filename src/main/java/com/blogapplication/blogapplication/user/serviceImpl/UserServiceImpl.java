@@ -107,7 +107,7 @@ public class UserServiceImpl implements UserService {
             if (Objects.isNull(createUserRequestDto.getPassword())
                     || createUserRequestDto.getPassword().trim().equals("")
                     || !this.validatePassword(createUserRequestDto.getPassword().trim()) ) {
-                errorMap.put("Password","Invalid Password");
+                errorMap.put("Password","Invalid Password. Password must be atleast 8 character long and must contains a capital letter, a small letter , a special character , a number");
             }
         }
 
