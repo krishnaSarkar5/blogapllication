@@ -1,11 +1,9 @@
 package com.blogapplication.blogapplication.blog.serviceImpl.serviceMethods;
 
 import com.blogapplication.blogapplication.authentication.dto.ResponseDto;
+import com.blogapplication.blogapplication.blog.dto.request.GetAllBlogRequestDto;
 import com.blogapplication.blogapplication.blog.dto.request.GetBlogRequestDto;
-import com.blogapplication.blogapplication.blog.dto.response.CommentResponseDto;
-import com.blogapplication.blogapplication.blog.dto.response.GetBlogResponseDto;
-import com.blogapplication.blogapplication.blog.dto.response.ReactionDto;
-import com.blogapplication.blogapplication.blog.dto.response.ReplyResponseDto;
+import com.blogapplication.blogapplication.blog.dto.response.*;
 import com.blogapplication.blogapplication.blog.entity.Blog;
 import com.blogapplication.blogapplication.blog.entity.BlogReactionDetails;
 import com.blogapplication.blogapplication.blog.entity.BlogViewDetails;
@@ -14,21 +12,25 @@ import com.blogapplication.blogapplication.blog.repositoty.BlogReactionDetailsRe
 import com.blogapplication.blogapplication.blog.repositoty.BlogRepository;
 import com.blogapplication.blogapplication.blog.repositoty.BlogViewDetailsRepository;
 import com.blogapplication.blogapplication.blog.repositoty.CommentRepository;
+import com.blogapplication.blogapplication.blog.specification.BlogSpecification;
+import com.blogapplication.blogapplication.common.dto.SeacrhCriteria;
 import com.blogapplication.blogapplication.common.exceptiom.ServiceException;
 import com.blogapplication.blogapplication.common.utility.AuthenticationUtil;
 import com.blogapplication.blogapplication.user.entity.User;
 import com.blogapplication.blogapplication.user.serviceImpl.serviceMethods.LoggedInUser;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.env.Environment;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.persistence.Tuple;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Component
@@ -40,6 +42,13 @@ public class GetBlog {
 
     @Autowired
     private Environment environment;
+
+
+    @Value("${views.duration}")
+    private Long viewDuration;
+
+    @Value("${views.list-limit}")
+    private Integer viewsListLimit;
 
 
     @Autowired
@@ -225,5 +234,195 @@ public class GetBlog {
         commentResponseDto.setStatus(comment.getStatus());
         commentResponseDto.setEdited(!comment.getCommentedAt().equals(comment.getUpdatedAt()));
         return  commentResponseDto;
+    }
+
+
+
+
+
+
+
+
+
+
+//   -----------------------------     Get All Blog  ----------------------------
+
+
+
+    public ResponseDto getAllBlogs(GetAllBlogRequestDto requestDto) {
+
+        requestDto.validateData();
+
+        List<Blog> blogsFromDb = getBlogsFromDb(requestDto);
+
+
+
+//        List<Blog> blogsFromDb = getBlogsFromDb(requestDto);
+
+        return null;
+    }
+
+
+    private List<Blog> getBlogsFromDb(GetAllBlogRequestDto request){
+
+
+
+
+        PageRequest pageInformation = getPageInformation(request);
+
+        if(request.getSearchField().size()>0){
+
+            List<SeacrhCriteria> criteriaList = getCriteriaList(request);
+
+            BlogSpecification specification = new BlogSpecification(criteriaList);
+
+            List<Blog> allBlogsWithPage = blogRepository.findAll(specification, pageInformation);
+
+            List<Blog> allBlogs = blogRepository.findAll(specification);
+
+            return allBlogs;
+
+//            return getGetAllBlogResponseWithCountDto(allBlogsWithPage, allBlogs.size());
+
+
+        }else {
+            List<Blog> allBlogs = blogRepository.findAll(pageInformation).getContent();
+
+            return allBlogs;
+
+//            return getGetAllBlogResponseWithCountDto(allBlogs,allBlogs.size());
+        }
+
+
+    }
+
+
+//    private GetAllBlogResponseWithCountDto getAllBlogsResponseDto(List<Blog> allBlogs){
+//        return getGetAllBlogResponseWithCountDto(allBlogs,allBlogs.size());
+//    }
+
+    private PageRequest getPageInformation(GetAllBlogRequestDto request){
+
+        int pageSize = request.getPageSize()==0?Integer.parseInt(environment.getProperty("defaultPageSize")):request.getPageSize();
+        int offset = request.getOffset()==0?Integer.parseInt(environment.getProperty("defaultOffset")):request.getOffset();
+
+        String sortBy =!Objects.isNull(request.getSortBy()) && !request.getSortBy().trim().equalsIgnoreCase("")?request.getSortBy():"id";
+
+        String orderType = !Objects.isNull(request.getOrderType()) && !request.getOrderType().trim().equalsIgnoreCase("")?request.getOrderType().trim():"asc";
+
+        return PageRequest.of(offset,pageSize).withSort(Sort.by(Sort.Direction.fromString(orderType),sortBy));
+    }
+
+
+
+    private List<SeacrhCriteria> getCriteriaList(GetAllBlogRequestDto request){
+
+        List<SeacrhCriteria> criteriaList = new ArrayList<>();
+
+        for(int i=0;i<request.getSearchField().size();i++){
+            SeacrhCriteria seacrhCriteria = new SeacrhCriteria(request.getSearchField().get(i),request.getSearchFieldValue().get(i));
+            criteriaList.add(seacrhCriteria);
+        }
+
+
+        return criteriaList;
+
+
+    }
+
+    private GetAllBlogResponseWithCountDto getGetAllBlogResponseWithCountDto(List<Blog> blogList, Integer allPossibleResultSize) {
+        List<Long> blogIdList = blogList.stream().map(b -> b.getId()).collect(Collectors.toList());
+
+        Map<Long, Integer> viewDetailsOfBlog = getViewDetailsOfBlog(blogIdList);
+
+        List<GetAllBlogResponseDto> blogResponseDtoList = getBlogResponseDtoList(blogList);
+
+
+        for (GetAllBlogResponseDto blogResponseDto : blogResponseDtoList){
+            blogResponseDto.setViews(viewDetailsOfBlog.get(blogResponseDto.getId()));
+        }
+
+        GetAllBlogResponseWithCountDto getAllBlogResponseWithCountDto = new GetAllBlogResponseWithCountDto(allPossibleResultSize,blogResponseDtoList);
+        return getAllBlogResponseWithCountDto;
+    }
+
+
+
+    private Map<Long,Integer> getViewDetailsOfBlog(List<Long> blogIdList){
+
+        List<Tuple> tuples = blogViewDetailsRepository.countOfViewsByBlogId(blogIdList);
+
+        return convertTupleToMap(tuples);
+    }
+
+
+
+    private List<GetAllBlogResponseDto> getBlogResponseDtoList(List<Blog> allBlogs){
+
+        List<GetAllBlogResponseDto> blogResponseDtoList = new ArrayList<>();
+
+        return allBlogs.stream().map(b-> new GetAllBlogResponseDto(b)).collect(Collectors.toList());
+
+    }
+
+    private Map<Long,Integer> convertTupleToMap(List<Tuple> tuples){
+
+        Map<Long,Integer> map = new HashMap<>();
+
+        for(Tuple t : tuples){
+            map.put(Long.parseLong(t.get("blog_id").toString()),Integer.parseInt(t.get("views").toString()));
+        }
+        return  map;
+    }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+//    --------------------------- Get All Trending Blog -----------------------------
+
+    public  ResponseDto getAllTrendingBlog(){
+
+        List<Tuple> blogViewDetailsOrderByViewsFromDB = getBlogViewDetailsOrderByViewsFromDB();
+
+        List<GetAllBlogResponseDto> getAllBlogResponseDtos = convertTupleToGetAlLBlogResponseDto(blogViewDetailsOrderByViewsFromDB);
+
+        ResponseDto responseDto = new ResponseDto();
+        responseDto.setStatus(true);
+        responseDto.setMessage(environment.getProperty("successResponse"));
+        responseDto.setData(getAllBlogResponseDtos);
+
+        return responseDto;
+
+
+    }
+
+
+    private  List<Tuple> getBlogViewDetailsOrderByViewsFromDB(){
+
+        LocalDateTime from = LocalDateTime.now().minusSeconds(viewDuration);
+
+        LocalDateTime to = LocalDateTime.now();
+
+        List<Tuple> allTrendingBlogBetweenDateRange = blogViewDetailsRepository.getAllTrendingBlogBetweenDateRange(from, to, viewsListLimit);
+
+        return  allTrendingBlogBetweenDateRange;
+    }
+
+
+    private List<GetAllBlogResponseDto> convertTupleToGetAlLBlogResponseDto(List<Tuple> list){
+        List<GetAllBlogResponseDto> dtoList = list.stream().map(e -> new GetAllBlogResponseDto(e)).collect(Collectors.toList());
+
+        return dtoList;
     }
 }

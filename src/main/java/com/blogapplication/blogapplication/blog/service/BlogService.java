@@ -22,4 +22,6 @@ public interface BlogService {
     public ResponseDto getViews(IdDto idDto);
 
     public ResponseDto getReactions(IdDto idDto);
+
+    public ResponseDto getAllTrendingBlog();
 }

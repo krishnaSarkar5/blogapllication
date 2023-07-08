@@ -18,7 +18,7 @@ public class Blog {
 
     private String title;
 
-    @Column(name="description" , length = 5000)
+    @Column(name="description" ,columnDefinition = "TEXT")
     private String description;
 
     private LocalDateTime createdAt;

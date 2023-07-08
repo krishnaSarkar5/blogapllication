@@ -26,6 +26,9 @@ public class GetAllBlogRequestDto {
     public void validateData(){
 
 
+        Map<String,Object> errorObject =  new HashMap<>();
+
+
         if(!this.searchField.isEmpty() && !this.searchFieldValue.isEmpty()
         && searchField.size()!=searchFieldValue.size()){
             throw new ServiceException("Size of search by field and value must be same");
@@ -39,16 +42,24 @@ public class GetAllBlogRequestDto {
         }
 
         if(inValidFields.size()>0){
-            throw  new ServiceException(Arrays.toString(inValidFields.toArray(new String[0]))+" invalid field");
+            errorObject.put("Search fields","Invalid fields");
+//            throw  new ServiceException(Arrays.toString(inValidFields.toArray(new String[0]))+" invalid field");
         }
 
 
         if(!Objects.isNull(sortBy) && !sortBy.trim().equalsIgnoreCase("") && Objects.isNull(BlogSearchField.valueOf(sortBy.toUpperCase()))){
-            throw new ServiceException(sortBy+" invalid sort by field");
+            errorObject.put("Sort By","Invalid sort by fields");
+//            throw new ServiceException(sortBy+" invalid sort by field");
         }
 
         if(!Objects.isNull(orderType) && !orderType.trim().equalsIgnoreCase("") && !orderType.equalsIgnoreCase("ASC") && !orderType.equalsIgnoreCase("DESC")){
-            throw new ServiceException(orderType+" invalid orderType");
+            errorObject.put("Order Type","Invalid orderType");
+//            throw new ServiceException(orderType+" invalid orderType");
+        }
+
+
+        if(errorObject.size()>0){
+            throw new ServiceException(errorObject);
         }
 
 

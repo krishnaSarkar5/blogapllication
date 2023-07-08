@@ -52,4 +52,10 @@ public class BlogController {
         ResponseDto responseDto = blogService.getViews(idDto);
         return new ResponseEntity<ResponseDto>(responseDto, HttpStatus.OK);
     }
+
+    @GetMapping("/trending-blogs")
+    public ResponseEntity<ResponseDto> getAllTrendingBlog(){
+        ResponseDto allTrendingBlog = blogService.getAllTrendingBlog();
+        return  new ResponseEntity<>(allTrendingBlog,HttpStatus.OK);
+    }
 }

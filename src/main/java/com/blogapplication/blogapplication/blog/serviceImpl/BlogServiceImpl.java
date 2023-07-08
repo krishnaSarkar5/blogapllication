@@ -530,6 +530,11 @@ public class BlogServiceImpl implements BlogService {
         return null;
     }
 
+    @Override
+    public ResponseDto getAllTrendingBlog() {
+        return getBlog.getAllTrendingBlog();
+    }
+
 
     private Comment getCommentEntity(PostCommentRequestDto request,Blog blog,User loggedInUser){
 

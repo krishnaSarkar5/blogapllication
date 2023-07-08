@@ -21,6 +21,7 @@ public interface BlogRepository extends JpaRepository<Blog,Long> {
 
     Page<Blog> findAll(Pageable pageable);
 
+
     //    public Integer countByDistinctUserIdAndId(Long blogId);
 
 //    countDistinctByUserIdAndId
