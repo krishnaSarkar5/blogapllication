@@ -3,6 +3,7 @@ package com.blogapplication.blogapplication.user.entity;
 
 import com.blogapplication.blogapplication.user.dto.CreateUserRequestDto;
 import lombok.*;
+import org.hibernate.annotations.CreationTimestamp;
 
 import javax.persistence.*;
 import java.time.LocalDateTime;
@@ -13,14 +14,15 @@ import java.time.ZoneId;
 @AllArgsConstructor
 @NoArgsConstructor
 @Entity
+@Table(name = "users")
 public class User {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    @Column(name = "email",unique = true,nullable = false)
+    @Column(name = "email" ,columnDefinition = " VARCHAR(255) UNIQUE NOT NULL" ,unique = true)
     private String email;
-    @Column(name = "phone",unique = true)
+    @Column(name = "phone",columnDefinition = " VARCHAR(255) UNIQUE ")
     private String phone;
 
     private String firstName;
@@ -31,9 +33,10 @@ public class User {
 
     private String profileId;
 
+    @CreationTimestamp
     private LocalDateTime createdAt;
 
-
+    @CreationTimestamp
     private LocalDateTime updatedAt;
 
     // 0 = inactive 1 = active
