@@ -4,6 +4,7 @@ import com.blogapplication.blogapplication.common.utility.Base64Converter;
 import com.cloudinary.Cloudinary;
 import com.cloudinary.utils.ObjectUtils;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -16,6 +17,9 @@ import java.util.UUID;
 public class UploadFileService {
 
     private final Cloudinary cloudinary;
+
+    @Value("${cloud.service.is-active}")
+    private Boolean isCloudServiceActive;
 
     public String uploadFile(MultipartFile multipartFile,String folder) throws IOException {
 
@@ -40,12 +44,19 @@ public class UploadFileService {
 
         String imageUrl="";
 
-        try {
-            imageUrl=this.uploadFile(multipartFile,folder);
-        } catch (IOException e) {
-            imageUrl=base64Code;
+
+        if(isCloudServiceActive){
+            try {
+                imageUrl=this.uploadFile(multipartFile,folder);
+            } catch (IOException e) {
+                imageUrl=base64Code;
 //            throw new RuntimeException(e);
+            }
+        }else {
+            imageUrl=base64Code;
         }
+
+
         return imageUrl;
     }
 }
