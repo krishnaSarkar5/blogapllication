@@ -27,7 +27,7 @@ public class GetAllBlogResponseDto {
 
     private Boolean featured;
 
-    private Boolean trending;
+    private boolean trending;
 
     private String image;
 
@@ -69,7 +69,7 @@ public class GetAllBlogResponseDto {
     }
 
 
-    public GetAllBlogResponseDto(Tuple blogTuple){
+    public GetAllBlogResponseDto(Tuple blogTuple,boolean isTrending){
 
         this.id = Long.valueOf(String.valueOf(blogTuple.get("id")));
 
@@ -91,7 +91,7 @@ public class GetAllBlogResponseDto {
 
         this.edited = parseDateTime(String.valueOf(blogTuple.get("created_at")),"yyyy-MM-dd HH:mm:ss.SSSSSS").equals(parseDateTime(String.valueOf(blogTuple.get("updated_at")),"yyyy-MM-dd HH:mm:ss.SSSSSS"));
 
-
+        this.trending=isTrending;
 
     }
 

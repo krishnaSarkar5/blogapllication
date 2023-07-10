@@ -67,7 +67,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter{
 
                 .antMatchers("/swagger*/**",
                         "/v2/api-docs", "/configuration/**","/demo/**",
-                        "/webjars/**","/authentication/login","/user/create-user","/category/**","/blog/trending-blogs").permitAll()
+                        "/webjars/**","/authentication/login","/user/create-user","/category/**","/blog/trending-blogs","/blog/all-blogs").permitAll()
 //                .antMatchers("").hasRole("ROLE_ADMIN")
                 .anyRequest().authenticated()
                 .and().exceptionHandling().authenticationEntryPoint(jwtAuthenticationEntryPoint)

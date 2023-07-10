@@ -253,17 +253,19 @@ public class GetBlog {
 
         requestDto.validateData();
 
-        List<Blog> blogsFromDb = getBlogsFromDb(requestDto);
+        GetAllBlogResponseWithCountDto blogsFromDb = getBlogsResponseDtoFromDb(requestDto);
 
 
+        ResponseDto responseDto = new ResponseDto();
+        responseDto.setStatus(true);
+        responseDto.setMessage(environment.getProperty("successResponse"));
+        responseDto.setData(blogsFromDb);
 
-//        List<Blog> blogsFromDb = getBlogsFromDb(requestDto);
-
-        return null;
+        return responseDto;
     }
 
 
-    private List<Blog> getBlogsFromDb(GetAllBlogRequestDto request){
+    private GetAllBlogResponseWithCountDto getBlogsResponseDtoFromDb(GetAllBlogRequestDto request){
 
 
 
@@ -280,17 +282,19 @@ public class GetBlog {
 
             List<Blog> allBlogs = blogRepository.findAll(specification);
 
-            return allBlogs;
 
-//            return getGetAllBlogResponseWithCountDto(allBlogsWithPage, allBlogs.size());
+
+            return getGetAllBlogResponseWithCountDto(allBlogsWithPage, allBlogs.size());
 
 
         }else {
             List<Blog> allBlogs = blogRepository.findAll(pageInformation).getContent();
 
-            return allBlogs;
 
-//            return getGetAllBlogResponseWithCountDto(allBlogs,allBlogs.size());
+
+            List<Blog> allBlogsWOPageInfo = blogRepository.findAll();
+
+            return getGetAllBlogResponseWithCountDto(allBlogs,allBlogsWOPageInfo.size());
         }
 
 
@@ -338,8 +342,14 @@ public class GetBlog {
         List<GetAllBlogResponseDto> blogResponseDtoList = getBlogResponseDtoList(blogList);
 
 
+        Map<Long, Tuple> trendingBlogsMap = getTrendingBlogsMap();
+
         for (GetAllBlogResponseDto blogResponseDto : blogResponseDtoList){
             blogResponseDto.setViews(viewDetailsOfBlog.get(blogResponseDto.getId()));
+            if(!Objects.isNull(trendingBlogsMap.get(blogResponseDto.getId()))){
+                blogResponseDto.setTrending(true);
+            }
+
         }
 
         GetAllBlogResponseWithCountDto getAllBlogResponseWithCountDto = new GetAllBlogResponseWithCountDto(allPossibleResultSize,blogResponseDtoList);
@@ -379,6 +389,16 @@ public class GetBlog {
 
 
 
+    private  Map<Long, Tuple> getTrendingBlogsMap(){
+
+        List<Tuple> blogViewDetails = getBlogViewDetailsOrderByViewsFromDB();
+
+        Map<Long, Tuple> blogViewMap = blogViewDetails.stream().collect(Collectors.toMap(b -> Long.parseLong(String.valueOf(b.get("id"))), b -> b));
+
+
+        return blogViewMap;
+
+    }
 
 
 
@@ -421,7 +441,7 @@ public class GetBlog {
 
 
     private List<GetAllBlogResponseDto> convertTupleToGetAlLBlogResponseDto(List<Tuple> list){
-        List<GetAllBlogResponseDto> dtoList = list.stream().map(e -> new GetAllBlogResponseDto(e)).collect(Collectors.toList());
+        List<GetAllBlogResponseDto> dtoList = list.stream().map(e -> new GetAllBlogResponseDto(e,true)).collect(Collectors.toList());
 
         return dtoList;
     }

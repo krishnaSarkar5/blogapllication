@@ -87,13 +87,13 @@ public class BlogServiceImpl implements BlogService {
     @Override
     public ResponseDto getAllBlogs(GetAllBlogRequestDto requestDto) {
 
-        this.validateIncomingRequest(requestDto);
+        this.validateIncomingRequest(requestDto);  // needed to be refactored
 
-        this.getLoggedInUser();
+//        this.getLoggedInUser();
 
 //        List<Blog> blogsFromDb = getBlogsFromDb(requestDto);
 
-        return null;
+        return getBlog.getAllBlogs(requestDto);
     }
 
 
@@ -138,7 +138,9 @@ public class BlogServiceImpl implements BlogService {
         }else {
             List<Blog> allBlogs = blogRepository.findAll(pageInformation).getContent();
 
-           return getGetAllBlogResponseWithCountDto(allBlogs,allBlogs.size());
+            List<Blog> allBlogsWOPageInfo = blogRepository.findAll();
+
+           return getGetAllBlogResponseWithCountDto(allBlogs,allBlogsWOPageInfo.size());
         }
 
   

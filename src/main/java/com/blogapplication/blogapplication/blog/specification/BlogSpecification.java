@@ -40,7 +40,7 @@ public class BlogSpecification implements Specification<Blog> {
 
         for(SeacrhCriteria searchCriteria : criteriaList){
 
-            BlogSearchField blogSearchField = BlogSearchField.valueOf(searchCriteria.getField());
+            BlogSearchField blogSearchField = BlogSearchField.valueOf(searchCriteria.getField().trim().toUpperCase());
 
             switch (blogSearchField){
                 case TITLE:{
@@ -73,7 +73,7 @@ public class BlogSpecification implements Specification<Blog> {
 
     private void titleSearch(Root<Blog> root, CriteriaBuilder criteriaBuilder, List<Predicate> predicateList,SeacrhCriteria searchCriteria){
 
-        predicateList.add(criteriaBuilder.like( root.get(searchCriteria.getField()),"%"+String.valueOf(searchCriteria.getValue())+"%"));
+        predicateList.add(criteriaBuilder.like( criteriaBuilder.lower(root.get(searchCriteria.getField())),"%"+String.valueOf(searchCriteria.getValue())+"%"));
 
     }
 
