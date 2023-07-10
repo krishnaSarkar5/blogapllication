@@ -14,31 +14,31 @@ import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.List;
 
-@Configuration
+//@Configuration
 public class InsertTableBean {
 
-    @Autowired
+//    @Autowired
     private CategoryRepository categoryRepository;
-    @Value("${food}")
+//    @Value("${food}")
     private String food;
 
-    @Value("${health}")
+//    @Value("${health}")
     private String health;
 
-    @Value("${travel}")
+//    @Value("${travel}")
     private String travel;
 
-    @Value("${science}")
+//    @Value("${science}")
     private String science;
 
-    @Value("${politics}")
+//    @Value("${politics}")
     private String politics;
 
-    @Autowired
+//    @Autowired
     private UploadFileService uploadFileService;
 
 
-    @Bean
+//    @Bean
     public void insertDataToCategoryTable(){
 
 
