@@ -9,6 +9,7 @@ import com.blogapplication.blogapplication.blog.repositoty.BlogReactionDetailsRe
 import com.blogapplication.blogapplication.blog.repositoty.BlogRepository;
 import com.blogapplication.blogapplication.blog.repositoty.BlogViewDetailsRepository;
 import com.blogapplication.blogapplication.blog.repositoty.CommentRepository;
+import com.blogapplication.blogapplication.common.cloudservice.service.UploadFileService;
 import com.blogapplication.blogapplication.common.exceptiom.ServiceException;
 import com.blogapplication.blogapplication.common.utility.AuthenticationUtil;
 import com.blogapplication.blogapplication.user.entity.User;
@@ -18,6 +19,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.server.ServerErrorException;
 
 import java.util.Map;
+import java.util.UUID;
 
 @Component
 public class CreateBlog {
@@ -46,12 +48,19 @@ public class CreateBlog {
     @Autowired
     private CategoryDaoService categoryDaoService;
 
+    @Autowired
+    private UploadFileService uploadFileService;
+
     public ResponseDto createNewBlog(CreateBlogRequestDto request) {
         validateRequest.validateIncomingRequest(request);
 
         User loggedInUser = authenticationUtil.currentLoggedInUser().getUser();
 
         Blog newBlogEntity = request.getNewBlogEntity(getCategoryById(request.getCategoryId()));
+
+        String image = uploadImage(request.getBlogImageBase64Code());
+
+        newBlogEntity.setImage(image);
 
         newBlogEntity.setCreatedBy(loggedInUser);
         newBlogEntity.setStatus(Integer.parseInt(environment.getProperty("active")));
@@ -72,4 +81,8 @@ public class CreateBlog {
         return categoryDaoService.getBlogById(id).orElseThrow(()->new ServiceException(Map.of("message","Invalid category id")));
     }
 
+
+    private String uploadImage(String base64code){
+        return uploadFileService.uploadImage(base64code, UUID.randomUUID().toString(),"Blog");
+    }
 }
